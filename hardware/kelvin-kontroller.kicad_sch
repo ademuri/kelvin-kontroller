@@ -3081,10 +3081,10 @@
     (property "Reference" "J15" (id 0) (at 192.532 90.6053 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "Conn_01x07" (id 1) (at 192.532 93.1422 0)
+    (property "Value" "Conn_01x07 Header" (id 1) (at 192.532 93.1422 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "" (id 2) (at 190.5 91.44 0)
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical" (id 2) (at 190.5 91.44 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 190.5 91.44 0)
@@ -3572,11 +3572,14 @@
     (in_bom yes) (on_board yes)
     (uuid b2b4c38e-004f-4224-91df-cfc95a83d425)
     (property "Reference" "J14" (id 0) (at 22.86 228.6 0))
-    (property "Value" "Conn_01x02" (id 1) (at 20.32 232.41 90))
-    (property "Footprint" "" (id 2) (at 22.86 233.68 0)
+    (property "Value" "Conn_01x02 Terminals" (id 1) (at 20.32 232.41 90))
+    (property "Footprint" "Homebrew:Amphenol_BarrierStrip_YK321020XX00G_1x02_P7.62" (id 2) (at 22.86 233.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 22.86 233.68 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "MPN" "YK3210203000G" (id 4) (at 22.86 233.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid 7d4e3ba7-31c2-4193-8822-31e319edb293))
@@ -3810,8 +3813,8 @@
     (in_bom yes) (on_board yes)
     (uuid de59f496-7ca2-492a-81b4-2ee0d79a010f)
     (property "Reference" "J13" (id 0) (at 193.04 36.83 0))
-    (property "Value" "Conn_01x04" (id 1) (at 195.58 43.18 90))
-    (property "Footprint" "" (id 2) (at 193.04 44.45 0)
+    (property "Value" "Conn_01x04 Header Right-angle" (id 1) (at 195.58 43.18 90))
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Horizontal" (id 2) (at 193.04 44.45 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 193.04 44.45 0)
@@ -4456,52 +4459,52 @@
       (reference "J1") (unit 1) (value "USB_B_Micro") (footprint "Homebrew:FRAMATOME_10118194-0001LF_fixed_bridges")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/5c00dde9-9a25-4b62-bb9a-7808ee1165e4"
-      (reference "J2") (unit 1) (value "Conn_01x04 Header") (footprint "")
+      (reference "J2") (unit 1) (value "Conn_01x04 Header") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/6ed19f8c-730b-48e5-baac-0c746f44a0fe"
-      (reference "J3") (unit 1) (value "Conn_01x02") (footprint "")
+      (reference "J3") (unit 1) (value "Conn_01x02 MiniPV") (footprint "Homebrew:MiniPV_76384-X02XX_1x02_P2.54mm_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/c52c0b5e-d508-417c-b245-3c0322c2b175"
-      (reference "J4") (unit 1) (value "Conn_01x02") (footprint "")
-    )
-    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/522b46a6-7de9-42fe-b8e0-62921b80488e"
-      (reference "J7") (unit 1) (value "Conn_01x02") (footprint "")
-    )
-    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/a597156d-1adc-457e-84a7-f751c1d0549d"
-      (reference "J8") (unit 1) (value "Conn_01x02") (footprint "")
-    )
-    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/9e4775dc-175f-4ad1-a42a-8065634c2420"
-      (reference "J9") (unit 1) (value "Conn_01x02") (footprint "")
+      (reference "J4") (unit 1) (value "Conn_01x02 MiniPV") (footprint "Homebrew:MiniPV_76384-X02XX_1x02_P2.54mm_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/34ab0ce4-ca8a-4f83-8b5d-699207168d68"
-      (reference "J10") (unit 1) (value "Conn_01x06 Header") (footprint "")
+      (reference "J10") (unit 1) (value "Conn_01x06 Header") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/3f9f4e20-b9db-463d-8dcf-8c61011454d2"
-      (reference "J11") (unit 1) (value "Conn_01x04") (footprint "")
+      (reference "J11") (unit 1) (value "Conn_01x04 MiniPV") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical")
     )
     (path "/34784a74-0d87-4284-bd23-f47708a5383b"
       (reference "J12") (unit 1) (value "USB_B_Micro") (footprint "Homebrew:FRAMATOME_10118194-0001LF_fixed_bridges")
     )
     (path "/de59f496-7ca2-492a-81b4-2ee0d79a010f"
-      (reference "J13") (unit 1) (value "Conn_01x04") (footprint "")
+      (reference "J13") (unit 1) (value "Conn_01x04 Header Right-angle") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Horizontal")
     )
     (path "/b2b4c38e-004f-4224-91df-cfc95a83d425"
-      (reference "J14") (unit 1) (value "Conn_01x02") (footprint "")
+      (reference "J14") (unit 1) (value "Conn_01x02 Terminals") (footprint "Homebrew:Amphenol_BarrierStrip_YK321020XX00G_1x02_P7.62")
     )
     (path "/60916c9b-504f-4f1b-b792-32446457f8bc"
-      (reference "J15") (unit 1) (value "Conn_01x07") (footprint "")
+      (reference "J15") (unit 1) (value "Conn_01x07 Header") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x07_P2.54mm_Vertical")
     )
-    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/d5f8e761-ba5d-4420-98a1-24146662f7c4"
-      (reference "J16") (unit 1) (value "Conn_01x02 Screw") (footprint "")
+    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/08b13da6-e960-4584-a5c7-61d970474022"
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/18134577-c2d1-40f8-8deb-39a75a43cfd7"
-      (reference "J?") (unit 1) (value "Conn_01x03") (footprint "")
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
     )
-    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/74fc1024-19b0-4248-8be8-58ee4164edaf"
-      (reference "J?") (unit 1) (value "Conn_01x02") (footprint "")
+    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/46853e35-e577-4d7c-93f6-11bdb0020a07"
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
+    )
+    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/a2d081cf-e222-4626-8eca-2432d1373a5b"
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
+    )
+    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/a4548f62-150b-4139-a191-2f7a2410a17e"
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/ba23e2ab-1a26-4b48-984c-0950f4cd565d"
-      (reference "J?") (unit 1) (value "Conn_01x03") (footprint "")
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
+    )
+    (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/fe76888a-d2dc-456d-99e2-f23ab79140ea"
+      (reference "J?") (unit 1) (value "Conn_01x03 MiniPV") (footprint "Homebrew:MiniPV_69167-X03XXX_1x03_P2.54mm_Polarized_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/065175bc-ea17-46fa-9357-43969de5409f"
       (reference "JP1") (unit 1) (value "Jumper_3_Bridged12") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical")
