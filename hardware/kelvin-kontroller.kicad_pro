@@ -126,9 +126,8 @@
   "erc": {
     "erc_exclusions": [
       "pin_to_pin|1054100|1803400|ea23168e-934c-43a6-b7db-bbf944e15fd7|178048d6-813f-4fe4-b86f-2594ce349ca5",
-      "pin_to_pin|1168400|1803400|ea23168e-934c-43a6-b7db-bbf944e15fd7|178048d6-813f-4fe4-b86f-2594ce349ca5",
+      "pin_to_pin|1066800|1803400|ea23168e-934c-43a6-b7db-bbf944e15fd7|178048d6-813f-4fe4-b86f-2594ce349ca5",
       "pin_to_pin|1346200|1727200|96f2d503-2d3b-4570-8e20-d9cbb12a0aba|aa2515e1-1642-431d-b588-3077e3cc0ba4",
-      "pin_to_pin|1727200|1727200|96f2d503-2d3b-4570-8e20-d9cbb12a0aba|aa2515e1-1642-431d-b588-3077e3cc0ba4",
       "pin_to_pin|977900|1803400|ea23168e-934c-43a6-b7db-bbf944e15fd7|178048d6-813f-4fe4-b86f-2594ce349ca5"
     ],
     "meta": {
