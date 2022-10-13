@@ -3464,7 +3464,7 @@
     (property "Value" "Conn_01x04 MiniPV" (id 1) (at 393.7 93.98 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" (id 2) (at 391.16 77.47 0)
+    (property "Footprint" "Homebrew:MiniPV_69167-X04XXX_1x04_P2.54mm_Polarized_Vertical" (id 2) (at 391.16 77.47 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 391.16 77.47 0)

@@ -4934,7 +4934,7 @@
       (reference "J10") (unit 1) (value "Conn_01x06 Header") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical")
     )
     (path "/e6c26726-7c08-49a7-acb2-990c617cbaaa/3f9f4e20-b9db-463d-8dcf-8c61011454d2"
-      (reference "J11") (unit 1) (value "Conn_01x04 MiniPV") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical")
+      (reference "J11") (unit 1) (value "Conn_01x04 MiniPV") (footprint "Homebrew:MiniPV_69167-X04XXX_1x04_P2.54mm_Polarized_Vertical")
     )
     (path "/34784a74-0d87-4284-bd23-f47708a5383b"
       (reference "J12") (unit 1) (value "USB_B_Micro") (footprint "Homebrew:FRAMATOME_10118194-0001LF_fixed_bridges")
