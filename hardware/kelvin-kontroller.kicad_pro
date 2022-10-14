@@ -44,8 +44,8 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": false,
         "zones": {
-          "45_degree_only": false,
-          "min_clearance": 0.508
+          "45_degree_only": true,
+          "min_clearance": 0.5
         }
       },
       "diff_pair_dimensions": [
@@ -57,7 +57,14 @@
       ],
       "drc_exclusions": [
         "clearance|151525000|170560000|7fa3fd56-3574-4126-8f54-8c99f17501b4|7d63e926-743d-4de5-92ed-15eb68016bf3",
-        "clearance|159125000|170560000|b7fd54ee-1d8f-4f72-ae17-1afd237c127e|95e4f95f-bc77-469b-96ea-ef05df27e3ef"
+        "clearance|159125000|170560000|b7fd54ee-1d8f-4f72-ae17-1afd237c127e|95e4f95f-bc77-469b-96ea-ef05df27e3ef",
+        "malformed_courtyard|117420700|127715863|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|117420700|132244536|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|120655464|124481100|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|120655464|135479300|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|125184137|124481100|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|125184137|135479300|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000",
+        "malformed_courtyard|128418900|127715863|b5e02fd0-09a9-4adf-ac19-9dc86e42643d|00000000-0000-0000-0000-000000000000"
       ],
       "meta": {
         "version": 2
@@ -467,7 +474,7 @@
       "workbook_filename": ""
     },
     "page_layout_descr_file": "",
-    "plot_directory": "",
+    "plot_directory": "ref",
     "spice_adjust_passive_values": false,
     "spice_external_command": "spice \"%I\"",
     "subpart_first_id": 65,
