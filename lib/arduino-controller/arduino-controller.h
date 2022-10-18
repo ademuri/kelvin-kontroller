@@ -10,6 +10,7 @@ class ArduinoController : public Controller {
   ArduinoController() {}
 
   void SetFan(uint8_t pwm) override;
+  void SetHeater(uint8_t pwm) override;
 
  private:
   static constexpr int kSpiSck = PA5;
