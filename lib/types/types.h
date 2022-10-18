@@ -6,6 +6,6 @@
 
 #else
 
-#include <cstdint.h>
+#include <cstdint>
 
 #endif

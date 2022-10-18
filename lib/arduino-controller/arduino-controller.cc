@@ -14,6 +14,11 @@ void ArduinoController::Init() {
 
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
+  
+  // TODO: check sensor state and enable the relay
+}
+
+void ArduinoController::Step() {
 }
 
 void ArduinoController::SetFan(uint8_t pwm) {

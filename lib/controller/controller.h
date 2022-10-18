@@ -8,6 +8,7 @@ class Controller {
 
   virtual void SetFan(const uint8_t pwm);
   virtual void SetHeater(const uint8_t pwm);
+  virtual void SetStir(const bool on);
 
   // Returns the current actual setpoint for the heater
   uint8_t GetFanValue() { return fan_value_; }
@@ -23,6 +24,7 @@ class Controller {
   uint8_t fan_value_ = 0;
   uint8_t heater_target_ = 0;
   uint8_t heater_value_ = 0;
+  bool stir_value_ = 0;
 
   bool relay_value_ = 1;
 
