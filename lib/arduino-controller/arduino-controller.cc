@@ -22,3 +22,8 @@ void ArduinoController::SetHeater(uint8_t pwm) {
 
   analogWrite(kSsrEn, heater_value_);
 }
+
+void ArduinoController::SetStir(bool on) {
+  stir_value_ = on;
+  digitalWrite(kStirEn, on);
+}
