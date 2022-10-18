@@ -9,8 +9,15 @@ class ArduinoController : public Controller {
  public:
   ArduinoController() {}
 
+  // Initializes peripherals. Call once before using.
+  void Init();
+
+  // Runs one cycle of the control loop. Call periodically.
+  void Step();
+
   void SetFan(uint8_t pwm) override;
   void SetHeater(uint8_t pwm) override;
+  void SetStir(const bool on) override;
 
  private:
   static constexpr int kSpiSck = PA5;
