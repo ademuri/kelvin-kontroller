@@ -28,8 +28,16 @@ const float Thermistor::G3_ = (Y3_ - Y1_) / (L3_ - L1_);
 
 const float Thermistor::C_ = (G3_ - G2_) / (L3_ - L2_) / (L1_ + L2_ + L3_);
 const float Thermistor::B_ = G2_ - C_ * (powf(L1_, 2) + L1_ * L2_ + powf(L2_, 2));
-const float Thermistor::A_ = Y1_ - (B_ + powf(L1_, 2)) * L1_;
+const float Thermistor::A_ = Y1_ - (B_ + powf(L1_, 2) * C_) * L1_;
 
 float Thermistor::ConvertResistanceToKelvin(float resistance) {
-  return 1 / (A_ + B_ * logf(resistance_) + C_ * powf(logf(resistance_), 3));
+  return 1.0 / (A_ + B_ * logf(resistance) + C_ * powf(logf(resistance), 3));
+}
+
+float Thermistor::ConvertResistanceToCelsius(float resistance) {
+    return ConvertResistanceToKelvin(resistance) - kKelvin;
+}
+
+float Thermistor::ConvertResistanceToFahrenheit(float resistance) {
+    return ConvertResistanceToCelsius(resistance) * 1.8 + 32;
 }

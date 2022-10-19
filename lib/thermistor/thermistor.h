@@ -8,6 +8,8 @@ class Thermistor {
   Thermistor();
 
   static float ConvertResistanceToKelvin(float resistance);
+  static float ConvertResistanceToCelsius(float resistance);
+  static float ConvertResistanceToFahrenheit(float resistance);
 
   static constexpr float kKelvin = 273.15;
 
