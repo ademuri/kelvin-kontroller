@@ -1,10 +1,11 @@
 #pragma once
 
-#include "types.h"
 #include <cmath>
 
+#include "types.h"
+
 class Thermistor {
-  public:
+ public:
   Thermistor();
 
   static float ConvertResistanceToKelvin(float resistance);
@@ -22,11 +23,11 @@ class Thermistor {
 
   // See https://electronics.stackexchange.com/a/51870/242186
   static float ResistanceAtTemp(const float temp, const float beta) {
-    return (resistance_) / expf(beta * (1 / (kKelvin + 25.0) - 1 / (kKelvin + temp)));
+    return (resistance_) /
+           expf(beta * (1 / (kKelvin + 25.0) - 1 / (kKelvin + temp)));
   }
 
-  private:
-
+ private:
   static const float resistance_50c_;
   static const float resistance_85c_;
   static const float resistance_100c_;
