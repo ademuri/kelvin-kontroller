@@ -31,3 +31,5 @@ jobs:
       run: pio run -e esp32
     - name: Build Fancy Runner
       run: pio run -e runner
+    - name: Run tests
+      run: pio test -e native
