@@ -6,7 +6,14 @@
 
 class Thermistor {
  public:
-  Thermistor();
+  Thermistor(int pin, float analog_reference_volts);
+
+  static constexpr uint32_t kDividerOhms = 4700;
+  static constexpr int kAnalogReadResolution = 10;
+  static constexpr uint32_t kAnalogReadBase = (1 << kAnalogReadResolution - 1);
+
+  float ReadResistance() const;
+
 
   static float ConvertResistanceToKelvin(float resistance);
   static float ConvertResistanceToCelsius(float resistance);
@@ -28,6 +35,9 @@ class Thermistor {
   }
 
  private:
+  const uint16_t analog_reference_volts_;
+  const int pin_;
+ 
   static const float resistance_50c_;
   static const float resistance_85c_;
   static const float resistance_100c_;

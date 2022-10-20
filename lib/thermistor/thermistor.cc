@@ -1,5 +1,24 @@
 #include "thermistor.h"
 
+Thermistor::Thermistor(int pin, float analog_reference_volts)
+    : pin_(pin), analog_reference_volts_(analog_reference_volts) {}
+
+float Thermistor::ReadResistance() const {
+  analogReadResolution(kAnalogReadResolution);
+  float input = analogRead(pin_);
+  float input_voltage = input * analog_reference_volts_ / kAnalogReadBase;
+
+  // Vout = R2 / (R1 + R2) * Vin
+  // R2 = Vout * R1 / (Vout - Vin), Vout != Vin
+  // R2 = -R1 / (1 - Vin / Vout)
+  if (kAnalogReadResolution == input_voltage) {
+    return -1;
+  }
+  return -input_voltage * kDividerOhms / (input_voltage - analog_reference_volts_);
+}
+
+constexpr uint32_t Thermistor::kDividerOhms;
+
 const float Thermistor::resistance_50c_ = ResistanceAtTemp(50, b25_50_);
 const float Thermistor::resistance_85c_ = ResistanceAtTemp(85, b25_85_);
 const float Thermistor::resistance_100c_ = ResistanceAtTemp(100, b25_100_);

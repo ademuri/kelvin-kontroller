@@ -2,6 +2,10 @@
 
 #include <gtest/gtest.h>
 
+#include "types.h"
+
+namespace {
+
 TEST(Thermistor, ConvertsDatasheetValues) {
   EXPECT_FLOAT_EQ(
       Thermistor::kKelvin + 25.0,
@@ -40,6 +44,26 @@ TEST(Thermistor, ConvertsToFahrenheit) {
                   Thermistor::ConvertResistanceToFahrenheit(
                       Thermistor::ResistanceAtTemp(85.0, Thermistor::b25_85_)));
 }
+
+TEST(Thermistor, ReadsResistance) {
+  static constexpr float kReferenceVoltage = 3.3;
+  static constexpr int kPin = 1;
+  Thermistor thermistor{kPin, /*analog_reference_volts=*/kReferenceVoltage};
+
+  SetAnalogRead(kPin, Thermistor::kAnalogReadBase / 2);
+  EXPECT_FLOAT_EQ(thermistor.ReadResistance(), Thermistor::kDividerOhms);
+
+  SetAnalogRead(kPin, Thermistor::kAnalogReadBase / 4);
+  EXPECT_NEAR(thermistor.ReadResistance(), Thermistor::kDividerOhms / 3, 10);
+
+  SetAnalogRead(kPin, 0);
+  EXPECT_FLOAT_EQ(thermistor.ReadResistance(), 0);
+
+  SetAnalogRead(kPin, (Thermistor::kAnalogReadBase * 3) / 4);
+  EXPECT_NEAR(thermistor.ReadResistance(), Thermistor::kDividerOhms * 3, 10);
+}
+
+}  // namespace
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
