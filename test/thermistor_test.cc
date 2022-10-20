@@ -63,6 +63,17 @@ TEST(Thermistor, ReadsResistance) {
   EXPECT_NEAR(thermistor.ReadResistance(), Thermistor::kDividerOhms * 3, 10);
 }
 
+TEST(Thermistor, ReadsFahrenheit) {
+  static constexpr float kReferenceVoltage = 3.3;
+  static constexpr int kPin = 1;
+  Thermistor thermistor{kPin, /*analog_reference_volts=*/kReferenceVoltage};
+
+  SetAnalogRead(kPin, Thermistor::kAnalogReadBase / 2);
+  float resistance = thermistor.ReadResistance();
+  EXPECT_FLOAT_EQ(thermistor.ReadFahrenheit(),
+                  Thermistor::ConvertResistanceToFahrenheit(resistance));
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {

@@ -14,7 +14,12 @@ float Thermistor::ReadResistance() const {
   if (kAnalogReadResolution == input_voltage) {
     return -1;
   }
-  return -input_voltage * kDividerOhms / (input_voltage - analog_reference_volts_);
+  return -input_voltage * kDividerOhms /
+         (input_voltage - analog_reference_volts_);
+}
+
+float Thermistor::ReadFahrenheit() const {
+  return ConvertResistanceToFahrenheit(ReadResistance());
 }
 
 constexpr uint32_t Thermistor::kDividerOhms;
