@@ -7,8 +7,10 @@
 ArduinoController controller;
 
 void setup() {
-  SPI.setMISO(PA6);
-  SPI.setSCLK(PA5);
+  SPI.setMISO(ArduinoController::kSpiMiso);
+  SPI.setSCLK(ArduinoController::kSpiSck);
+
+  controller.Init();
 }
 
-void loop() {}
+void loop() { controller.Step(); }

@@ -19,9 +19,10 @@ class ArduinoController : public Controller {
   void SetHeater(uint8_t pwm) override;
   void SetStir(const bool on) override;
 
- private:
   static constexpr int kSpiSck = PA5;
   static constexpr int kSpiMiso = PA6;
+
+ private:
   static constexpr int kSpiNss1 = PB0;
   static constexpr int kSpiNss2 = PB1;
 
