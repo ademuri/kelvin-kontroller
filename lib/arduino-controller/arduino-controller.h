@@ -7,7 +7,7 @@
 
 class ArduinoController : public Controller {
  public:
-  ArduinoController() {}
+  ArduinoController() : Controller() {}
 
   // Initializes peripherals. Call once before using.
   void Init();
@@ -21,6 +21,11 @@ class ArduinoController : public Controller {
 
   static constexpr int kSpiSck = PA5;
   static constexpr int kSpiMiso = PA6;
+
+ protected:
+  float ReadBeanTempF() override;
+  float ReadEnvTempF() override;
+  float ReadAmbientTempF() override;
 
  private:
   static constexpr int kSpiNss1 = PB0;

@@ -4,13 +4,13 @@
 #include "max31855-thermocouple.h"
 #include "thermistor.h"
 
-ArduinoController controller;
+ArduinoController* controller = new ArduinoController();
 
 void setup() {
   SPI.setMISO(ArduinoController::kSpiMiso);
   SPI.setSCLK(ArduinoController::kSpiSck);
 
-  controller.Init();
+  controller->Init();
 }
 
-void loop() { controller.Step(); }
+void loop() { controller->Step(); }

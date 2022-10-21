@@ -46,3 +46,16 @@ void ArduinoController::SetStir(bool on) {
   stir_value_ = on;
   digitalWrite(kStirEn, on);
 }
+
+// TODO: implement these
+float ArduinoController::ReadBeanTempF() {
+  return 0;
+}
+
+float ArduinoController::ReadEnvTempF() {
+  return 0;
+}
+
+float ArduinoController::ReadAmbientTempF() {
+  return 0;
+}
