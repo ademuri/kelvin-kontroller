@@ -16,6 +16,9 @@ class Controller {
 
   RunnerStatus GetStatus() const { return status_; }
 
+  // Clears any faults in the status
+  void ResetStatus() { status_ = {}; }
+
   // Runs one iteration of the control loop
   virtual void Step();
 
@@ -32,6 +35,9 @@ class Controller {
 
   // Returns the current actual setpoint for the heater
   uint8_t GetHeaterValue() const { return heater_value_; }
+
+  // Returns whether the stir motor is enabled
+  bool GetStirValue() const { return stir_value_; }
 
   // Returns the value of the relay, which controls power to the SSR
   bool GetRelayValue() const { return relay_value_; }

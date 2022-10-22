@@ -36,10 +36,64 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
       << to_string(controller.GetStatus());
 
+  // Bean temp
   controller.SetBeanTempF(0);
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
       << to_string(controller.GetStatus());
+
+  controller.ResetStatus();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+
+  controller.SetBeanTempF(600);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+  controller.SetBeanTempF(70);
+
+  // Env temp
+  controller.SetEnvTempF(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+
+  controller.ResetStatus();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+
+  controller.SetEnvTempF(900);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+  controller.SetEnvTempF(70);
+
+  // Ambient temp
+  controller.SetAmbientTempF(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+
+  controller.ResetStatus();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+
+  controller.SetAmbientTempF(140);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+}
+
+TEST(Controller, SafeDefaultsOnFault) {
+  FakeController controller;
+  controller.Init();
+
+  controller.SetAmbientTempF(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 255);
+  EXPECT_EQ(controller.GetHeaterValue(), 0);
+  EXPECT_EQ(controller.GetStirValue(), true);
+  EXPECT_EQ(controller.GetRelayValue(), false);
 }
 
 }  // namespace
