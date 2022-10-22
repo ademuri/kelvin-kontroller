@@ -10,14 +10,15 @@ class ArduinoController : public Controller {
   ArduinoController() : Controller() {}
 
   // Initializes peripherals. Call once before using.
-  void Init();
+  void Init() override;
 
   // Runs one cycle of the control loop. Call periodically.
-  void Step();
+  void Step() override;
 
   void SetFan(uint8_t pwm) override;
   void SetHeater(uint8_t pwm) override;
-  void SetStir(const bool on) override;
+  void SetStir(bool on) override;
+  void SetRelay(bool on) override;
 
   static constexpr int kSpiSck = PA5;
   static constexpr int kSpiMiso = PA6;

@@ -16,9 +16,11 @@ void ArduinoController::Init() {
   pinMode(kThermistor2, INPUT);
   
   // TODO: check sensor state and enable the relay
+  Controller::Init();
 }
 
 void ArduinoController::Step() {
+  Controller::Step();
 }
 
 void ArduinoController::SetFan(uint8_t pwm) {
@@ -45,6 +47,11 @@ void ArduinoController::SetHeater(uint8_t pwm) {
 void ArduinoController::SetStir(bool on) {
   stir_value_ = on;
   digitalWrite(kStirEn, on);
+}
+
+void ArduinoController::SetRelay(bool on) {
+  relay_value_ = on;
+  digitalWrite(kRelayEn, on);
 }
 
 // TODO: implement these
