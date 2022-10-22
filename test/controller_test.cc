@@ -87,6 +87,7 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
 TEST(Controller, SafeDefaultsOnFault) {
   FakeController controller;
   controller.Init();
+  EXPECT_EQ(controller.GetRelayValue(), true);
 
   controller.SetAmbientTempF(0);
   controller.Step();
