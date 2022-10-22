@@ -9,6 +9,7 @@ Controller::~Controller() {}
 void Controller::Init() {
   SetRelay(true);
   temp_pid.setTimeStep(kPidPeriod);
+  temp_pid.setBangBang(kBangBangThreshold);
 }
 
 void Controller::Step() {
@@ -46,7 +47,7 @@ void Controller::Step() {
   status_.env_temp = env_temp;
   status_.ambient_temp = ambient_temp;
 
-  if ((uint32_t)status_.fault.Faulty()) {
+  if (status_.fault.Faulty()) {
     if (relay_value_ == 1) {
       // When a fault occurs, fail safe: disable the heater, turn the fan to
       // maximum, and enable the stir.
@@ -64,6 +65,14 @@ void Controller::Step() {
 
   temp_pid.run(bean_temp);
   SetHeater(temp_pid.getRelayState());
+}
+
+void Controller::ReceiveCommand(const RunnerCommand& command) {
+  temp_pid.setSetPoint(command.target_temp);
+  SetFan(command.fan_speed);
+  if (command.reset) {
+    ResetStatus();
+  }
 }
 
 void Controller::SetFan(uint8_t pwm) {

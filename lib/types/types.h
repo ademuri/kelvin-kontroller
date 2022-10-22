@@ -14,6 +14,7 @@ void SetAnalogRead(int pin, uint16_t value);
 
 uint32_t millis();
 void SetMillis(uint32_t millis);
+void AdvanceMillis(uint32_t millis);
 
 float constrain(float input, float min, float max);
 
@@ -40,8 +41,14 @@ struct RunnerFault {
 };
 
 struct RunnerStatus {
-  RunnerFault fault;
-  float bean_temp;
-  float env_temp;
-  float ambient_temp;
+  RunnerFault fault = {};
+  float bean_temp = 0;
+  float env_temp = 0;
+  float ambient_temp = 0;
+};
+
+struct RunnerCommand {
+  float target_temp = 0;
+  uint8_t fan_speed = 0;
+  bool reset = false;
 };

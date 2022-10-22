@@ -20,11 +20,13 @@ class Controller {
   // Clears any faults in the status
   void ResetStatus() { status_ = {}; }
 
+  // Initialize this controller
+  virtual void Init();
+
   // Runs one iteration of the control loop
   virtual void Step();
 
-  // Initialize this controller
-  virtual void Init();
+  void ReceiveCommand(const RunnerCommand& command);
 
   // Actuators
   virtual void SetFan(uint8_t pwm);
@@ -35,7 +37,7 @@ class Controller {
   uint8_t GetFanValue() const { return fan_value_; }
 
   // Returns the current actual setpoint for the heater
-  uint8_t GetHeaterValue() const { return heater_value_; }
+  bool GetHeaterValue() const { return heater_value_; }
 
   // Returns whether the stir motor is enabled
   bool GetStirValue() const { return stir_value_; }
@@ -61,7 +63,6 @@ class Controller {
 
   uint8_t fan_target_ = 0;
   uint8_t fan_value_ = 0;
-  bool heater_target_ = 0;
   bool heater_value_ = 0;
   bool stir_value_ = 0;
 
@@ -79,6 +80,8 @@ class Controller {
   static constexpr uint32_t kSsrPeriod = 500;
   // TODO: tune this, or possibly remove it if loop timing is consistent
   static constexpr uint32_t kPidPeriod = 10;
+  // If the target temp is farther than this from the setpoint, use simple on-off control.
+  static constexpr float kBangBangThreshold = 50;
 
   // TODO: tune these
   static constexpr float kP = 0.1;

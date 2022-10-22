@@ -14,6 +14,7 @@ void analogReadResolution(int resolution) {}
 uint32_t millis_ = 0;
 uint32_t millis() { return millis_; }
 void SetMillis(uint32_t millis) { millis_ = millis; }
+void AdvanceMillis(uint32_t millis) { millis_ += millis; }
 
 float constrain(float input, float min, float max) {
   input = std::min(input, max);

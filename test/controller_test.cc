@@ -154,4 +154,65 @@ TEST(Controller, SetsStatusTemps) {
   EXPECT_EQ(controller.GetStatus().env_temp, 100);
 }
 
+TEST(Controller, CommandSetsFan) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.Step();
+
+  EXPECT_EQ(controller.GetFanValue(), 0);
+
+  RunnerCommand command{};
+  command.fan_speed = 127;
+  controller.ReceiveCommand(command);
+  EXPECT_EQ(controller.GetFanValue(), 127);
+
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 127);
+}
+
+TEST(Controller, CommandResetsStatus) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(10);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+
+  RunnerCommand command{};
+  command.reset = true;
+  controller.ReceiveCommand(command);
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+}
+
+TEST(Controller, CommandSetsPidTemp) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.Step();
+
+  EXPECT_EQ(controller.GetHeaterValue(), false);
+
+  AdvanceMillis(10);
+  RunnerCommand command{};
+  command.target_temp = 400;
+  controller.ReceiveCommand(command);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+  EXPECT_EQ(controller.GetHeaterValue(), true); 
+
+  // Set the temp high enough to activate bang-bang control
+  controller.SetBeanTempF(500);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+  EXPECT_EQ(controller.GetHeaterValue(), false); 
+}
+
 }  // namespace
