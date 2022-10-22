@@ -52,6 +52,9 @@ class Controller {
   // Reads the thermistor on the control board.
   virtual float ReadAmbientTempF() = 0;
 
+  virtual uint8_t BeanTempReadError() = 0;
+  virtual uint8_t EnvTempReadError() = 0;
+
  protected:
   virtual void SetRelay(bool on);
 

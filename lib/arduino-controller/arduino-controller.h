@@ -26,10 +26,11 @@ class ArduinoController : public Controller {
   static constexpr int kSpiSck = PA5;
   static constexpr int kSpiMiso = PA6;
 
- protected:
   float ReadBeanTempF() override;
   float ReadEnvTempF() override;
   float ReadAmbientTempF() override;
+  uint8_t BeanTempReadError() override;
+  uint8_t EnvTempReadError() override;
 
  private:
   static constexpr int kSpiNss1 = PB0;

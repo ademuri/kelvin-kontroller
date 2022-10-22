@@ -56,7 +56,6 @@ void ArduinoController::SetRelay(bool on) {
   digitalWrite(kRelayEn, on);
 }
 
-// TODO: implement these
 float ArduinoController::ReadBeanTempF() {
   return bean_temp_filter_.GetFilteredValue();
 }
@@ -67,4 +66,12 @@ float ArduinoController::ReadEnvTempF() {
 
 float ArduinoController::ReadAmbientTempF() {
   return ambient_temp_filter_.GetFilteredValue();
+}
+
+uint8_t ArduinoController::BeanTempReadError() {
+  return bean_therm_.GetReadError();
+}
+
+uint8_t ArduinoController::EnvTempReadError() {
+  return env_therm_.GetReadError();
 }

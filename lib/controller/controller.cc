@@ -2,8 +2,7 @@
 
 #include <algorithm>
 
-Controller::Controller() {
-}
+Controller::Controller() {}
 
 Controller::~Controller() {}
 
@@ -35,6 +34,11 @@ void Controller::Step() {
     status_.fault.ambient_temp_high = 1;
   }
 
+  status_.fault.bean_temp_read_error =
+      std::max(status_.fault.bean_temp_read_error, BeanTempReadError());
+  status_.fault.env_temp_read_error =
+      std::max(status_.fault.env_temp_read_error, EnvTempReadError());
+
   if ((uint32_t)status_.fault.Faulty()) {
     if (relay_value_ == 1) {
       // When a fault occurs, fail safe: disable the heater, turn the fan to
@@ -64,10 +68,6 @@ void Controller::SetHeater(uint8_t pwm) {
   heater_value_ = std::max(heater_min_, pwm);
 }
 
-void Controller::SetStir(bool on) {
-  stir_value_ = on;
-}
+void Controller::SetStir(bool on) { stir_value_ = on; }
 
-void Controller::SetRelay(bool on) {
-  relay_value_ = on;
-}
+void Controller::SetRelay(bool on) { relay_value_ = on; }
