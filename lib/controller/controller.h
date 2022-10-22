@@ -26,7 +26,7 @@ class Controller {
   // Runs one iteration of the control loop
   virtual void Step();
 
-  void ReceiveCommand(const RunnerCommand& command);
+  void ReceiveCommand(const RunnerCommand &command);
 
   // Actuators
   virtual void SetFan(uint8_t pwm);
@@ -80,7 +80,8 @@ class Controller {
   static constexpr uint32_t kSsrPeriod = 500;
   // TODO: tune this, or possibly remove it if loop timing is consistent
   static constexpr uint32_t kPidPeriod = 10;
-  // If the target temp is farther than this from the setpoint, use simple on-off control.
+  // If the target temp is farther than this from the setpoint, use simple
+  // on-off control.
   static constexpr float kBangBangThreshold = 50;
 
   // TODO: tune these

@@ -1,6 +1,6 @@
-#include <algorithm>
-
 #include "arduino-controller.h"
+
+#include <algorithm>
 
 void ArduinoController::Init() {
   pinMode(kFanEn, OUTPUT);
@@ -18,7 +18,7 @@ void ArduinoController::Init() {
   bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
-  
+
   // TODO: check sensor state and enable the relay
   Controller::Init();
 }

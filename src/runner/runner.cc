@@ -4,7 +4,7 @@
 #include "max31855-thermocouple.h"
 #include "thermistor.h"
 
-ArduinoController* controller = new ArduinoController();
+ArduinoController *controller = new ArduinoController();
 
 void setup() {
   SPI.setMISO(ArduinoController::kSpiMiso);

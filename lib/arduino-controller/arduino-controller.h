@@ -4,9 +4,9 @@
 #include <median-filter.h>
 
 #include "controller.h"
-#include "types.h"
 #include "max31855-thermocouple.h"
 #include "thermistor.h"
+#include "types.h"
 
 class ArduinoController : public Controller {
  public:
@@ -60,16 +60,19 @@ class ArduinoController : public Controller {
   static constexpr int kAux3 = PB8;
   static constexpr int kAuxEn = PC7;
 
- Max31855Thermocouple bean_therm_{kSpiNss1};
- Max31855Thermocouple env_therm_{kSpiNss2};
- Thermistor ambient_therm_{kThermistor1, /*analog_reference_volts=*/ 3.3};
+  Max31855Thermocouple bean_therm_{kSpiNss1};
+  Max31855Thermocouple env_therm_{kSpiNss2};
+  Thermistor ambient_therm_{kThermistor1, /*analog_reference_volts=*/3.3};
 
   MedianFilter<float, float, 5> bean_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return bean_therm_.ReadFahrenheit(); });
+      MedianFilter<float, float, 5>(
+          [this]() { return bean_therm_.ReadFahrenheit(); });
   MedianFilter<float, float, 5> env_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return env_therm_.ReadFahrenheit(); });
+      MedianFilter<float, float, 5>(
+          [this]() { return env_therm_.ReadFahrenheit(); });
   MedianFilter<float, float, 5> ambient_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return ambient_therm_.ReadFahrenheit(); });
+      MedianFilter<float, float, 5>(
+          [this]() { return ambient_therm_.ReadFahrenheit(); });
 
   static constexpr uint32_t kFilterRunInterval = 5;
 };

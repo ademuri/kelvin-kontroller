@@ -1,8 +1,7 @@
 #include "types.h"
 
-#include <cstdlib>
 #include <algorithm>
-
+#include <cstdlib>
 
 #ifndef ARDUINO
 uint16_t analog_read_value = 0;

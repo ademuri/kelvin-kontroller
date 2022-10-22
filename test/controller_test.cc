@@ -205,14 +205,14 @@ TEST(Controller, CommandSetsPidTemp) {
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
       << to_string(controller.GetStatus());
-  EXPECT_EQ(controller.GetHeaterValue(), true); 
+  EXPECT_EQ(controller.GetHeaterValue(), true);
 
   // Set the temp high enough to activate bang-bang control
   controller.SetBeanTempF(500);
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
       << to_string(controller.GetStatus());
-  EXPECT_EQ(controller.GetHeaterValue(), false); 
+  EXPECT_EQ(controller.GetHeaterValue(), false);
 }
 
 }  // namespace

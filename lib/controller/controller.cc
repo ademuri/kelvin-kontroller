@@ -67,7 +67,7 @@ void Controller::Step() {
   SetHeater(temp_pid.getRelayState());
 }
 
-void Controller::ReceiveCommand(const RunnerCommand& command) {
+void Controller::ReceiveCommand(const RunnerCommand &command) {
   temp_pid.setSetPoint(command.target_temp);
   SetFan(command.fan_speed);
   if (command.reset) {
