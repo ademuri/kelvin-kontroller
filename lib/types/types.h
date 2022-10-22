@@ -39,4 +39,7 @@ struct RunnerFault {
 
 struct RunnerStatus {
   RunnerFault fault;
+  float bean_temp;
+  float env_temp;
+  float ambient_temp;
 };

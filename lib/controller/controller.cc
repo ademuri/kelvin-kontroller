@@ -39,6 +39,10 @@ void Controller::Step() {
   status_.fault.env_temp_read_error =
       std::max(status_.fault.env_temp_read_error, EnvTempReadError());
 
+  status_.bean_temp = bean_temp;
+  status_.env_temp = env_temp;
+  status_.ambient_temp = ambient_temp;
+
   if ((uint32_t)status_.fault.Faulty()) {
     if (relay_value_ == 1) {
       // When a fault occurs, fail safe: disable the heater, turn the fan to

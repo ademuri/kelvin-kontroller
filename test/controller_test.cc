@@ -13,8 +13,10 @@ std::ostream& operator<<(std::ostream& os, const RunnerStatus& status) {
   return os << "RunnerStatus: {fault: " << status.fault.bean_temp_low
             << status.fault.bean_temp_high << status.fault.env_temp_low
             << status.fault.env_temp_high << status.fault.ambient_temp_low
-            << status.fault.ambient_temp_high << ", bean_temp_read_error: " << std::to_string(status.fault.bean_temp_read_error)
-            << ", env_temp_read_error: " << std::to_string(status.fault.env_temp_read_error) << "}";
+            << status.fault.ambient_temp_high << ", bean_temp_read_error: "
+            << std::to_string(status.fault.bean_temp_read_error)
+            << ", env_temp_read_error: "
+            << std::to_string(status.fault.env_temp_read_error) << "}";
 }
 
 std::string to_string(const RunnerStatus& status) {
@@ -125,6 +127,31 @@ TEST(Controller, SafeDefaultsOnFault) {
   EXPECT_EQ(controller.GetHeaterValue(), 0);
   EXPECT_EQ(controller.GetStirValue(), true);
   EXPECT_EQ(controller.GetRelayValue(), false);
+}
+
+TEST(Controller, SetsStatusTemps) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(60);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(80);
+  controller.Step();
+
+  EXPECT_EQ(controller.GetStatus().bean_temp, 60);
+  EXPECT_EQ(controller.GetStatus().env_temp, 70);
+  EXPECT_EQ(controller.GetStatus().ambient_temp, 80);
+
+  controller.SetBeanTempF(10);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+  EXPECT_EQ(controller.GetStatus().bean_temp, 10);
+
+  controller.SetEnvTempF(100);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+  EXPECT_EQ(controller.GetStatus().env_temp, 100);
 }
 
 }  // namespace
