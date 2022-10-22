@@ -6,7 +6,10 @@ Controller::Controller() {}
 
 Controller::~Controller() {}
 
-void Controller::Init() { SetRelay(true); }
+void Controller::Init() {
+  SetRelay(true);
+  temp_pid.setTimeStep(kPidPeriod);
+}
 
 void Controller::Step() {
   const float bean_temp = ReadBeanTempF();
@@ -48,7 +51,7 @@ void Controller::Step() {
       // When a fault occurs, fail safe: disable the heater, turn the fan to
       // maximum, and enable the stir.
       SetFan(255);
-      SetHeater(0);
+      SetHeater(false);
       SetStir(true);
       SetRelay(false);
 
@@ -58,6 +61,9 @@ void Controller::Step() {
     // If a fault has already occurred, just read the temps and do nothing else.
     return;
   }
+
+  temp_pid.run(bean_temp);
+  SetHeater(temp_pid.getRelayState());
 }
 
 void Controller::SetFan(uint8_t pwm) {
@@ -66,11 +72,7 @@ void Controller::SetFan(uint8_t pwm) {
   fan_value_ = std::max(fan_min_, pwm);
 }
 
-void Controller::SetHeater(uint8_t pwm) {
-  heater_target_ = pwm;
-  heater_value_ = std::min(heater_max_, pwm);
-  heater_value_ = std::max(heater_min_, pwm);
-}
+void Controller::SetHeater(bool on) { heater_value_ = on; }
 
 void Controller::SetStir(bool on) { stir_value_ = on; }
 

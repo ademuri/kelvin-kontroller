@@ -15,6 +15,8 @@ void SetAnalogRead(int pin, uint16_t value);
 uint32_t millis();
 void SetMillis(uint32_t millis);
 
+float constrain(float input, float min, float max);
+
 #endif
 
 // Platform-independent declarations

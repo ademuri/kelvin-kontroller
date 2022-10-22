@@ -19,7 +19,7 @@ class ArduinoController : public Controller {
   void Step() override;
 
   void SetFan(uint8_t pwm) override;
-  void SetHeater(uint8_t pwm) override;
+  void SetHeater(bool on) override;
   void SetStir(bool on) override;
   void SetRelay(bool on) override;
 

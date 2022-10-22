@@ -41,9 +41,9 @@ void ArduinoController::SetFan(uint8_t pwm) {
   }
 }
 
-void ArduinoController::SetHeater(uint8_t pwm) {
-  Controller::SetHeater(pwm);
-  analogWrite(kSsrEn, heater_value_);
+void ArduinoController::SetHeater(bool on) {
+  Controller::SetHeater(on);
+  digitalWrite(kSsrEn, on);
 }
 
 void ArduinoController::SetStir(bool on) {

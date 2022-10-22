@@ -4,6 +4,7 @@
 #include "types.h"
 // clang-format on
 
+#include <AutoPID.h>
 #include <arduino-timer.h>
 
 class Controller {
@@ -27,7 +28,7 @@ class Controller {
 
   // Actuators
   virtual void SetFan(uint8_t pwm);
-  virtual void SetHeater(uint8_t pwm);
+  virtual void SetHeater(bool on);
   virtual void SetStir(bool on);
 
   // Returns the current actual setpoint for the heater
@@ -60,18 +61,31 @@ class Controller {
 
   uint8_t fan_target_ = 0;
   uint8_t fan_value_ = 0;
-  uint8_t heater_target_ = 0;
-  uint8_t heater_value_ = 0;
+  bool heater_target_ = 0;
+  bool heater_value_ = 0;
   bool stir_value_ = 0;
 
   bool relay_value_ = 1;
 
   uint8_t fan_min_ = 0;
   uint8_t fan_max_ = 255;
-  uint8_t heater_min_ = 0;
-  uint8_t heater_max_ = 255;
 
  private:
+  // Period for the SSR PWM output. Should be an even multiple of half-cycles.
+  // The SSR is zero-cross output, so for 60Hz mains, there are 120 half-cycles
+  // per second. A longer period means more granularity in controlling the heat,
+  // at the expense of a slower response time.
+  // TODO: tune this
+  static constexpr uint32_t kSsrPeriod = 500;
+  // TODO: tune this, or possibly remove it if loop timing is consistent
+  static constexpr uint32_t kPidPeriod = 10;
+
+  // TODO: tune these
+  static constexpr float kP = 0.1;
+  static constexpr float kI = 0.1;
+  static constexpr float kD = 0.5;
+  AutoPIDRelay temp_pid{kSsrPeriod, kP, kI, kD};
+
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
   static constexpr float kMinAmbientTemp = 40;
