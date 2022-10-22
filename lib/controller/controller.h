@@ -1,14 +1,20 @@
 #pragma once
 
-#include <arduino-timer.h>
-#include <median-filter.h>
-
+// clang-format off
 #include "types.h"
+// clang-format on
+
+#include <arduino-timer.h>
 
 class Controller {
+ protected:
+  RunnerStatus status_{};
+
  public:
   Controller();
   virtual ~Controller();
+
+  RunnerStatus GetStatus() const { return status_; }
 
   // Runs one iteration of the control loop
   virtual void Step();
@@ -17,9 +23,9 @@ class Controller {
   virtual void Init();
 
   // Actuators
-  virtual void SetFan(uint8_t pwm) = 0;
-  virtual void SetHeater(uint8_t pwm) = 0;
-  virtual void SetStir(bool on) = 0;
+  virtual void SetFan(uint8_t pwm);
+  virtual void SetHeater(uint8_t pwm);
+  virtual void SetStir(bool on);
 
   // Returns the current actual setpoint for the heater
   uint8_t GetFanValue() const { return fan_value_; }
@@ -41,7 +47,7 @@ class Controller {
   virtual float ReadAmbientTempF() = 0;
 
  protected:
-  virtual void SetRelay(bool on) = 0;
+  virtual void SetRelay(bool on);
 
   uint8_t fan_target_ = 0;
   uint8_t fan_value_ = 0;
@@ -56,18 +62,7 @@ class Controller {
   uint8_t heater_min_ = 0;
   uint8_t heater_max_ = 255;
 
-  RunnerStatus status_;
-
  private:
-  MedianFilter<float, float, 5> bean_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return ReadBeanTempF(); });
-  MedianFilter<float, float, 5> env_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return ReadEnvTempF(); });
-  MedianFilter<float, float, 5> ambient_temp_filter_ =
-      MedianFilter<float, float, 5>([this]() { return ReadAmbientTempF(); });
-
-  static constexpr uint32_t kFilterRunInterval = 5;
-
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
   static constexpr float kMinAmbientTemp = 40;

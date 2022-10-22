@@ -1,9 +1,8 @@
 #include "controller.h"
 
+#include <algorithm>
+
 Controller::Controller() {
-  bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
-  env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
-  ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
 }
 
 Controller::~Controller() {}
@@ -11,13 +10,9 @@ Controller::~Controller() {}
 void Controller::Init() { SetRelay(true); }
 
 void Controller::Step() {
-  bean_temp_filter_.Run();
-  env_temp_filter_.Run();
-  ambient_temp_filter_.Run();
-
-  const float bean_temp = bean_temp_filter_.GetFilteredValue();
-  const float env_temp = env_temp_filter_.GetFilteredValue();
-  const float ambient_temp = ambient_temp_filter_.GetFilteredValue();
+  const float bean_temp = ReadBeanTempF();
+  const float env_temp = ReadEnvTempF();
+  const float ambient_temp = ReadAmbientTempF();
 
   if (bean_temp < kMinBeanTemp) {
     status_.fault.bean_temp_low = 1;
@@ -55,4 +50,24 @@ void Controller::Step() {
     // If a fault has already occurred, just read the temps and do nothing else.
     return;
   }
+}
+
+void Controller::SetFan(uint8_t pwm) {
+  fan_target_ = pwm;
+  fan_value_ = std::min(fan_max_, pwm);
+  fan_value_ = std::max(fan_min_, pwm);
+}
+
+void Controller::SetHeater(uint8_t pwm) {
+  heater_target_ = pwm;
+  heater_value_ = std::min(heater_max_, pwm);
+  heater_value_ = std::max(heater_min_, pwm);
+}
+
+void Controller::SetStir(bool on) {
+  stir_value_ = on;
+}
+
+void Controller::SetRelay(bool on) {
+  relay_value_ = on;
 }

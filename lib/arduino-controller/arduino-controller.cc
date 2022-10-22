@@ -14,19 +14,24 @@ void ArduinoController::Init() {
 
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
+
+  bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
+  env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
+  ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   
   // TODO: check sensor state and enable the relay
   Controller::Init();
 }
 
 void ArduinoController::Step() {
+  bean_temp_filter_.Run();
+  env_temp_filter_.Run();
+  ambient_temp_filter_.Run();
   Controller::Step();
 }
 
 void ArduinoController::SetFan(uint8_t pwm) {
-  fan_target_ = pwm;
-  fan_value_ = std::min(fan_max_, pwm);
-  fan_value_ = std::max(fan_min_, pwm);
+  Controller::SetFan(pwm);
 
   if (fan_value_ == 0 && kForceDisableFan) {
     digitalWrite(kFanEn, LOW);
@@ -37,32 +42,29 @@ void ArduinoController::SetFan(uint8_t pwm) {
 }
 
 void ArduinoController::SetHeater(uint8_t pwm) {
-  heater_target_ = pwm;
-  heater_value_ = std::min(heater_max_, pwm);
-  heater_value_ = std::max(heater_min_, pwm);
-
+  Controller::SetHeater(pwm);
   analogWrite(kSsrEn, heater_value_);
 }
 
 void ArduinoController::SetStir(bool on) {
-  stir_value_ = on;
+  Controller::SetStir(on);
   digitalWrite(kStirEn, on);
 }
 
 void ArduinoController::SetRelay(bool on) {
-  relay_value_ = on;
+  Controller::SetRelay(on);
   digitalWrite(kRelayEn, on);
 }
 
 // TODO: implement these
 float ArduinoController::ReadBeanTempF() {
-  return 0;
+  return bean_temp_filter_.GetFilteredValue();
 }
 
 float ArduinoController::ReadEnvTempF() {
-  return 0;
+  return env_temp_filter_.GetFilteredValue();
 }
 
 float ArduinoController::ReadAmbientTempF() {
-  return 0;
+  return ambient_temp_filter_.GetFilteredValue();
 }

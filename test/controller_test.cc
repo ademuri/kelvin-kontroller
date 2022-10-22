@@ -1,0 +1,45 @@
+#include <gtest/gtest.h>
+
+#include <ostream>
+#include <sstream>
+
+#include "fake-controller.h"
+#include "thermistor.h"
+#include "types.h"
+
+namespace {
+
+std::ostream& operator<<(std::ostream& os, const RunnerStatus& status) {
+  return os << "fault: " << status.fault.bean_temp_low
+            << status.fault.bean_temp_high << status.fault.env_temp_low
+            << status.fault.env_temp_high << status.fault.ambient_temp_low
+            << status.fault.ambient_temp_high;
+}
+
+std::string to_string(const RunnerStatus& status) {
+  std::ostringstream ss;
+  ss << status;
+  return std::move(ss).str();
+}
+
+TEST(Controller, SetsFaultIfTempRangesExceeded) {
+  FakeController controller;
+  controller.Init();
+
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+
+  controller.SetBeanTempF(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), true)
+      << to_string(controller.GetStatus());
+}
+
+}  // namespace
