@@ -27,3 +27,5 @@ fp-info-cache
 # Code
 .pio
 .vscode
+
+constants.h
