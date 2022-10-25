@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EasyTransfer.h>
 
 #include "arduino-controller.h"
 #include "max31855-thermocouple.h"

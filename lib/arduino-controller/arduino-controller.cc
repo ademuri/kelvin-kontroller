@@ -19,6 +19,10 @@ void ArduinoController::Init() {
   env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
 
+  serial_.begin(kSerialBaud);
+  transfer_in_.begin(details(command_), &serial_);
+  transfer_out_.begin(details(status_), &serial_);
+
   // TODO: check sensor state and enable the relay
   Controller::Init();
 }

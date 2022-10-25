@@ -52,3 +52,6 @@ struct RunnerCommand {
   uint8_t fan_speed = 0;
   bool reset = false;
 };
+
+// The serial rate for the UART between the ESP32 and STM32
+constexpr int kSerialBaud = 115200;

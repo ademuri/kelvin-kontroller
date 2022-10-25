@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <EasyTransfer.h>
 #include <median-filter.h>
 
 #include "controller.h"
@@ -75,4 +76,11 @@ class ArduinoController : public Controller {
           [this]() { return ambient_therm_.ReadFahrenheit(); });
 
   static constexpr uint32_t kFilterRunInterval = 5;
+
+  // See https://github.com/stm32duino/wiki/wiki/API#hardwareserial
+  HardwareSerial serial_{kEspUsartRx, kEspUsartTx};
+
+  RunnerCommand command_;
+  EasyTransfer transfer_in_;
+  EasyTransfer transfer_out_;
 };
