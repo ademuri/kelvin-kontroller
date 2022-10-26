@@ -2,14 +2,23 @@
 #include <ArduinoJson.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <EasyTransfer.h>
 #include <WiFi.h>
 
 #include "constants.h"
+#include "types.h"
+
+constexpr size_t kJsonBufferSize = 1000;
+constexpr int kRx = 16;
+constexpr int kTx = 17;
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
 
-constexpr size_t kJsonBufferSize = 1000;
+RunnerCommand command;
+RunnerStatus status;
+EasyTransfer transfer_in;
+EasyTransfer transfer_out;
 
 // Handle a web socket message. Compatible with Artisan ().
 // For (sparse) documentation on the protocol, see:
@@ -39,8 +48,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       response_message["id"] = request_message["id"];
       JsonObject data = response_message.createNestedObject("data");
       // TODO: set these from the controller
-      data["BT"] = 80;
-      data["ET"] = 70;
+      data["BT"] = status.bean_temp;
+      data["ET"] = status.env_temp;
+      data["AT"] = status.ambient_temp;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
       // https://github.com/me-no-dev/ESPAsyncWebServer#direct-access-to-web-socket-message-buffer
@@ -94,6 +104,16 @@ void setup() {
   server.addHandler(&websocket);
   server.begin();
   Serial.println(" done.");
+
+  Serial.print("Initializing serial...");
+  Serial2.begin(kSerialBaud, SERIAL_8N1, kRx, kTx);
+  transfer_in.begin(details(status), &Serial2);
+  transfer_out.begin(details(command), &Serial2);
 }
 
-void loop() { websocket.cleanupClients(); }
+void loop() {
+  websocket.cleanupClients();
+  if (transfer_in.receiveData()) {
+    transfer_out.sendData();
+  }
+}
