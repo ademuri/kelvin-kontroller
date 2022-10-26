@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <EasyTransfer.h>
 #include <median-filter.h>
+#include <arduino-timer.h>
 
 #include "controller.h"
 #include "max31855-thermocouple.h"
@@ -83,4 +84,7 @@ class ArduinoController : public Controller {
   RunnerCommand command_;
   EasyTransfer transfer_in_;
   EasyTransfer transfer_out_;
+
+  static constexpr uint32_t kNoCommsTimeout = 10 * 1000;
+  CountDownTimer no_comms_timer_{kNoCommsTimeout};
 };

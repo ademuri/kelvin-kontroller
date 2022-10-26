@@ -36,7 +36,11 @@ void ArduinoController::Step() {
   transfer_out_.sendData();
   // Wait for esp32 to send data. TODO: tune this
   delay(3);
-  transfer_in_.receiveData();
+  if (transfer_in_.receiveData()) {
+    no_comms_timer_.Reset();
+  } else if (no_comms_timer_.Expired()) {
+    // TODO: reset
+  }
 }
 
 void ArduinoController::SetFan(uint8_t pwm) {
