@@ -3,90 +3,80 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <EasyTransfer.h>
+#include <ModbusServerTCPasync.h>
 #include <WiFi.h>
 
 #include "constants.h"
 #include "types.h"
 
+constexpr bool kDebug = true;
+
 constexpr size_t kJsonBufferSize = 1000;
 constexpr int kRx = 16;
 constexpr int kTx = 17;
 
-AsyncWebServer server(80);
-AsyncWebSocket websocket("/websocket");
+ModbusServerTCPasync modbus_server;
+constexpr uint8_t kModbusId = 1;
+constexpr int kModbusPort = 502;
+constexpr int kModbusMaxClients = 4;
+constexpr uint32_t kModbusTimeout = 10000;
 
 RunnerCommand command;
 RunnerStatus status;
 EasyTransfer transfer_in;
 EasyTransfer transfer_out;
 
-// Handle a web socket message. Compatible with Artisan ().
-// For (sparse) documentation on the protocol, see:
-// Official documentation: https://artisan-scope.org/devices/websockets/
-// Discussion: https://github.com/artisan-roaster-scope/artisan/discussions/701
-// Source:
-// https://github.com/artisan-roaster-scope/artisan/blob/192bb47f9ecc1123f194926b43bca269a1d5b9a5/src/artisanlib/wsport.py
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  static StaticJsonDocument<kJsonBufferSize> request_message;
-  static StaticJsonDocument<kJsonBufferSize> response_message;
-  static char buffer[kJsonBufferSize];
-
-  AwsFrameInfo *info = (AwsFrameInfo *)arg;
-  if (info->final && info->index == 0 && info->len == len &&
-      info->opcode == WS_TEXT) {
-    data[len] = 0;
-    Serial.printf("WebSocket message received: %s\n", data);
-    DeserializationError err = deserializeJson(request_message, data);
-    if (err) {
-      Serial.printf("WebSocket error while deserializing json: %s\n",
-                    err.c_str());
-      return;
+ModbusMessage modbusRead(ModbusMessage request) {
+  if (kDebug) {
+    Serial.printf("[modbus] serverID: %u, function: %u, data: ", request.getServerID(), request.getFunctionCode());
+    for (uint16_t i = 2; i < request.size(); i++) {
+      uint16_t value;
+      request.get(i, value);
+      Serial.printf("%02X %02X", (value << 8) & 0xFF, value & 0xFF);
     }
-
-    if (strcmp(request_message["command"], "getData") == 0) {
-      response_message.clear();
-      response_message["id"] = request_message["id"];
-      JsonObject data = response_message.createNestedObject("data");
-      // TODO: set these from the controller
-      data["BT"] = status.bean_temp;
-      data["ET"] = status.env_temp;
-      data["AT"] = status.ambient_temp;
-
-      // Note: can use websocket.makeBuffer(len) if this is slow:
-      // https://github.com/me-no-dev/ESPAsyncWebServer#direct-access-to-web-socket-message-buffer
-      size_t len = serializeJson(response_message, buffer);
-      if (len == 0 || len > kJsonBufferSize) {
-        Serial.printf(
-            "WebSocket error while serializing json: wrote %u bytes\n", len);
-        return;
-      }
-      websocket.textAll(buffer, len);
-    }
+    Serial.println();
   }
-}
 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
-             AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.printf("WebSocket client #%u connected from %s\n", client->id(),
-                    client->remoteIP().toString().c_str());
+  ModbusMessage response{/*dataLen=*/8};
+  uint16_t address = 0;
+  uint16_t words = 0;
+  request.get(2, address);
+  request.get(4, words);
+
+  if (address == 0 || address > 3) {
+    response.setError(request.getServerID(), request.getFunctionCode(),
+                      ILLEGAL_DATA_ADDRESS);
+    return response;
+  }
+
+  if (words != 1) {
+    Serial.printf(
+        "Warning: received modbus read requesting multiple words: %u\n", words);
+  }
+
+  response.add(request.getServerID(), request.getFunctionCode(),
+               /* response length */ 2);
+  switch (address) {
+    case 1:
+      response.add(status.bean_temp);
       break;
-    case WS_EVT_DISCONNECT:
-      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+
+    case 2:
+      response.add(status.env_temp);
       break;
-    case WS_EVT_DATA:
-      handleWebSocketMessage(arg, data, len);
+
+    case 3:
+      response.add(status.ambient_temp);
       break;
-    case WS_EVT_ERROR:
-      Serial.printf("WebSocket client #%u error %u: %s\n", client->id(),
-                    *((uint16_t *)arg), (char *)data);
-      break;
-    case WS_EVT_PONG:
-      Serial.printf("WebSocket client #%u pong: %s\b", client->id(),
-                    (len) ? (char *)data : "");
+
+    default:
+      // Should never happen!
+      response.add((uint16_t) 0);
+      Serial.printf("Illegal state: invalid modbus address: %u\n", address);
       break;
   }
+
+  return response;
 }
 
 void setup() {
@@ -99,20 +89,19 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  Serial.print("Starting websockets server...");
-  websocket.onEvent(onEvent);
-  server.addHandler(&websocket);
-  server.begin();
-  Serial.println(" done.");
-
   Serial.print("Initializing serial...");
   Serial2.begin(kSerialBaud, SERIAL_8N1, kRx, kTx);
   transfer_in.begin(details(status), &Serial2);
   transfer_out.begin(details(command), &Serial2);
+  Serial.println(" done.");
+
+  Serial.print("Initialing ModBus server...");
+  modbus_server.registerWorker(kModbusId, READ_HOLD_REGISTER, &modbusRead);
+  modbus_server.start(kModbusPort, kModbusMaxClients, kModbusTimeout);
+  Serial.println(" done.");
 }
 
 void loop() {
-  websocket.cleanupClients();
   if (transfer_in.receiveData()) {
     transfer_out.sendData();
   }
