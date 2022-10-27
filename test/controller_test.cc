@@ -215,4 +215,12 @@ TEST(Controller, CommandSetsPidTemp) {
   EXPECT_EQ(controller.GetHeaterValue(), false);
 }
 
+TEST(RunnerStatus, FaultyOnNoComms) {
+  RunnerStatus status;
+  EXPECT_EQ(status.fault.Faulty(), false);
+
+  status.fault.no_comms = true;
+  EXPECT_EQ(status.fault.Faulty(), true);
+}
+
 }  // namespace

@@ -2,8 +2,8 @@
 
 #include <Arduino.h>
 #include <EasyTransfer.h>
-#include <median-filter.h>
 #include <arduino-timer.h>
+#include <median-filter.h>
 
 #include "controller.h"
 #include "max31855-thermocouple.h"

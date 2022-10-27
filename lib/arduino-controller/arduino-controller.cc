@@ -39,7 +39,7 @@ void ArduinoController::Step() {
   if (transfer_in_.receiveData()) {
     no_comms_timer_.Reset();
   } else if (no_comms_timer_.Expired()) {
-    // TODO: reset
+    status_.fault.no_comms = true;
   }
 }
 

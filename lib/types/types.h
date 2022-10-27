@@ -33,10 +33,12 @@ struct RunnerFault {
   uint8_t bean_temp_read_error : 3;
   uint8_t env_temp_read_error : 3;
 
+  bool no_comms : 1;
+
   bool Faulty() const {
     return bean_temp_low || bean_temp_high || env_temp_low || env_temp_high ||
            ambient_temp_low || ambient_temp_high || bean_temp_read_error ||
-           env_temp_read_error;
+           env_temp_read_error || no_comms;
   }
 };
 
