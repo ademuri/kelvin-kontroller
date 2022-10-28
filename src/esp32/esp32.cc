@@ -26,8 +26,7 @@ RunnerStatus status;
 EasyTransfer transfer_in;
 EasyTransfer transfer_out;
 
-ModbusMessage modbusRead(ModbusMessage request) {
-  if (kDebug) {
+void modbusPrint(const ModbusMessage& message) {
     Serial.printf("[modbus] serverID: %u, function: %u, data: ", request.getServerID(), request.getFunctionCode());
     for (uint16_t i = 2; i < request.size(); i++) {
       uint16_t value;
@@ -35,6 +34,11 @@ ModbusMessage modbusRead(ModbusMessage request) {
       Serial.printf("%02X %02X", (value << 8) & 0xFF, value & 0xFF);
     }
     Serial.println();
+}
+
+ModbusMessage modbusRead(ModbusMessage request) {
+  if (kDebug) {
+    modbusPrint(request);
   }
 
   ModbusMessage response{/*dataLen=*/8};
@@ -79,6 +83,22 @@ ModbusMessage modbusRead(ModbusMessage request) {
   return response;
 }
 
+ModbusMessage modbusWrite(ModbusMessage request) {
+  if (kDebug) {
+    modbusPrint(request);
+  }
+
+  ModbusMessage response{/*dataLen=*/8};
+  uint16_t address = 0;
+  request.get(2, address);
+
+  if (address == 0 || address > 2) {
+    response.setError(request.getServerID(), request.getFunctionCode(),
+                      ILLEGAL_DATA_ADDRESS);
+    return response;
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   WiFi.begin(kSsid, kPassword);
@@ -97,6 +117,7 @@ void setup() {
 
   Serial.print("Initialing ModBus server...");
   modbus_server.registerWorker(kModbusId, READ_HOLD_REGISTER, &modbusRead);
+  modbus_server.registerWorker(kModbusId, WRITE_HOLD_REGISTER, &modbusWrite);
   modbus_server.start(kModbusPort, kModbusMaxClients, kModbusTimeout);
   Serial.println(" done.");
 }
