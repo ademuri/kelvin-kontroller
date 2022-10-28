@@ -46,6 +46,7 @@ void Controller::Step() {
   status_.bean_temp = bean_temp;
   status_.env_temp = env_temp;
   status_.ambient_temp = ambient_temp;
+  status_.fan_speed = GetFanValue();
 
   if (status_.fault.Faulty()) {
     if (relay_value_ == 1) {

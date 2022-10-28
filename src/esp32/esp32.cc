@@ -12,6 +12,10 @@ constexpr size_t kJsonBufferSize = 1000;
 constexpr int kRx = 16;
 constexpr int kTx = 17;
 
+constexpr char* kTemp = "temp";
+constexpr char* kFan = "fan";
+constexpr char* kReset = "reset";
+
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
 
@@ -43,14 +47,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       return;
     }
 
+    response_message.clear();
+    response_message["id"] = request_message["id"];
     if (strcmp(request_message["command"], "getData") == 0) {
-      response_message.clear();
-      response_message["id"] = request_message["id"];
       JsonObject data = response_message.createNestedObject("data");
       // TODO: set these from the controller
       data["BT"] = status.bean_temp;
       data["ET"] = status.env_temp;
       data["AT"] = status.ambient_temp;
+      data["FAN"] = status.fan_speed;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
       // https://github.com/me-no-dev/ESPAsyncWebServer#direct-access-to-web-socket-message-buffer
@@ -61,6 +66,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         return;
       }
       websocket.textAll(buffer, len);
+    } else if (strcmp(request_message["command"], "setParams") == 0) {
+      if (!request_message.containsKey("params")) {
+        Serial.printf("WebSocket error: no params in 'setParams' message");
+        return;
+      }
+
+      if (request_message.containsKey(kTemp)) {
+        command.target_temp = request_message[kTemp];
+      }
+      if (request_message.containsKey(kFan)) {
+        command.fan_speed = request_message[kFan];
+      }
+      if (request_message.containsKey(kReset) && request_message[kReset]) {
+        command.reset = true;
+      }
     }
   }
 }
