@@ -1,9 +1,12 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <EasyTransfer.h>
 #include <WiFi.h>
+#include <Wire.h>
 
 #include "constants.h"
 #include "types.h"
@@ -23,6 +26,12 @@ RunnerCommand command;
 RunnerStatus status;
 EasyTransfer transfer_in;
 EasyTransfer transfer_out;
+
+constexpr uint8_t kScreenWidth = 128;
+constexpr uint8_t kScreenHeight = 64;
+constexpr int kSda = 13;
+constexpr int kScl = 4;
+Adafruit_SH1107 oled = Adafruit_SH1107(kScreenWidth, kScreenHeight, &Wire);
 
 // Handle a web socket message. Compatible with Artisan ().
 // For (sparse) documentation on the protocol, see:
@@ -129,6 +138,17 @@ void setup() {
   Serial2.begin(kSerialBaud, SERIAL_8N1, kRx, kTx);
   transfer_in.begin(details(status), &Serial2);
   transfer_out.begin(details(command), &Serial2);
+  Serial.println(" done.");
+
+  Serial.print("Initializing display...");
+  Wire.begin(kSda, kScl);
+  oled.begin(/*address=*/0x3D);
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.setTextSize(3);
+  oled.println("Hello, world");
+  oled.display();
+  Serial.println(" done.");
 }
 
 void loop() {
