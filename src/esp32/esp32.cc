@@ -12,9 +12,9 @@ constexpr size_t kJsonBufferSize = 1000;
 constexpr int kRx = 16;
 constexpr int kTx = 17;
 
-constexpr char* kTemp = "temp";
-constexpr char* kFan = "fan";
-constexpr char* kReset = "reset";
+constexpr char kTemp[] = "temp";
+constexpr char kFan[] = "fan";
+constexpr char kReset[] = "reset";
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
