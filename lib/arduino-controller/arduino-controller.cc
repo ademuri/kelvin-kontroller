@@ -15,27 +15,32 @@ void ArduinoController::Init() {
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
 
+  // bean_therm_.Begin();
+  // env_therm_.Begin();
+
   bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
 
-  serial_.begin(kSerialBaud);
-  transfer_in_.begin(details(command_), &serial_);
-  transfer_out_.begin(details(status_), &serial_);
+  Serial1.begin(kSerialBaud);
+
+  transfer_in_.begin(details(command_), &Serial1);
+  transfer_out_.begin(details(status_), &Serial1);
 
   // TODO: check sensor state and enable the relay
   Controller::Init();
 }
 
 void ArduinoController::Step() {
-  bean_temp_filter_.Run();
-  env_temp_filter_.Run();
-  ambient_temp_filter_.Run();
+  digitalWrite(kLed, (millis() / 500) % 2);
+  // bean_temp_filter_.Run();
+  // env_temp_filter_.Run();
+  // ambient_temp_filter_.Run();
   Controller::Step();
 
   transfer_out_.sendData();
   // Wait for esp32 to send data. TODO: tune this
-  delay(3);
+  delay(5);
   if (transfer_in_.receiveData()) {
     no_comms_timer_.Reset();
   } else if (no_comms_timer_.Expired()) {

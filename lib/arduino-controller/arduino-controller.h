@@ -78,9 +78,6 @@ class ArduinoController : public Controller {
 
   static constexpr uint32_t kFilterRunInterval = 5;
 
-  // See https://github.com/stm32duino/wiki/wiki/API#hardwareserial
-  HardwareSerial serial_{kEspUsartRx, kEspUsartTx};
-
   RunnerCommand command_;
   EasyTransfer transfer_in_;
   EasyTransfer transfer_out_;
