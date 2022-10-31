@@ -15,8 +15,8 @@ void ArduinoController::Init() {
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
 
-  // bean_therm_.Begin();
-  // env_therm_.Begin();
+  bean_therm_.Begin();
+  env_therm_.Begin();
 
   bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
@@ -33,9 +33,9 @@ void ArduinoController::Init() {
 
 void ArduinoController::Step() {
   digitalWrite(kLed, (millis() / 500) % 2);
-  // bean_temp_filter_.Run();
-  // env_temp_filter_.Run();
-  // ambient_temp_filter_.Run();
+  bean_temp_filter_.Run();
+  env_temp_filter_.Run();
+  ambient_temp_filter_.Run();
   Controller::Step();
 
   transfer_out_.sendData();

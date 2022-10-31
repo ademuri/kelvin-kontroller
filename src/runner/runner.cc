@@ -14,7 +14,6 @@ void setup() {
 
   SPI.setMISO(ArduinoController::kSpiMiso);
   SPI.setSCLK(ArduinoController::kSpiSck);
-  SPI.begin();
 
   controller->Init();
 }
