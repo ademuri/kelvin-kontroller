@@ -27,8 +27,7 @@ function getData() {
   socket.send('{"command": "getData"}');  
 }
 
-setTimeout(getData, 1);
-setInterval(getData, 5000);
+setInterval(getData, 1000);
 
 </script>
 )rawliteral";
