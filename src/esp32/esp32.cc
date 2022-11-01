@@ -72,7 +72,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["AT"] = status.ambient_temp;
       data["FAN"] = status.fan_speed;
       data["FAULT"] = status.fault.Faulty();
-      data["Updated"] = millis() - received_at;
+      data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
       // https://github.com/me-no-dev/ESPAsyncWebServer#direct-access-to-web-socket-message-buffer
