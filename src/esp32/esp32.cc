@@ -30,8 +30,8 @@ EasyTransfer transfer_in;
 EasyTransfer transfer_out;
 uint32_t received_at = 0;
 
-constexpr uint8_t kScreenWidth = 128;
-constexpr uint8_t kScreenHeight = 64;
+constexpr uint8_t kScreenWidth = 64;
+constexpr uint8_t kScreenHeight = 128;
 constexpr int kSda = 13;
 constexpr int kScl = 4;
 Adafruit_SH1107 oled = Adafruit_SH1107(kScreenWidth, kScreenHeight, &Wire);
@@ -126,6 +126,17 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
   }
 }
 
+const char *faultToBinaryString(const RunnerFault &fault) {
+  static constexpr size_t kBufferSize = 20;
+  static char buffer[kBufferSize];
+  snprintf(buffer, kBufferSize, "%u%u%u%u%u%u%u%u%u", fault.bean_temp_low,
+           fault.bean_temp_high, fault.env_temp_low, fault.env_temp_high,
+           fault.ambient_temp_low, fault.ambient_temp_high,
+           fault.bean_temp_read_error != 0, fault.env_temp_read_error != 0,
+           fault.no_comms);
+  return buffer;
+}
+
 void setup() {
   Serial.begin(115200);
   WiFi.begin(kSsid, kPassword);
@@ -197,13 +208,14 @@ void setup() {
   Serial.println(" done.");
 
   Serial.print("Initializing display...");
-  Wire.begin(kSda, kScl);
-  oled.begin(/*address=*/0x3C);
+  Wire.begin(kSda, kScl, (uint32_t)400000);
+  oled.begin(/*address=*/0x3C, false);
+  oled.setRotation(1);
   oled.clearDisplay();
-  oled.setCursor(0, 0);
-  oled.setTextSize(3);
-  oled.println("Hello, world");
   oled.display();
+  oled.setTextColor(SH110X_WHITE);
+  oled.setCursor(0, 0);
+  oled.setTextSize(2);
   Serial.println(" done.");
 }
 
@@ -212,5 +224,11 @@ void loop() {
   if (transfer_in.receiveData()) {
     received_at = millis();
     transfer_out.sendData();
+    oled.clearDisplay();
+    oled.setCursor(0, 0);
+    oled.printf("BEAN: %3.0fF\n", status.bean_temp);
+    oled.printf(" ENV: %3.0fF\n", status.bean_temp);
+    oled.printf("%s", faultToBinaryString(status.fault));
+    oled.display();
   }
 }
