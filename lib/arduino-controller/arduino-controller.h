@@ -66,14 +66,15 @@ class ArduinoController : public Controller {
   Max31855Thermocouple env_therm_{kSpiNss2};
   Thermistor ambient_therm_{kThermistor2, /*analog_reference_volts=*/3.3};
 
-  MedianFilter<float, float, 5> bean_temp_filter_ =
-      MedianFilter<float, float, 5>(
+  static constexpr uint32_t kFilterSize = 5;
+  MedianFilter<float, float, kFilterSize> bean_temp_filter_ =
+      MedianFilter<float, float, kFilterSize>(
           [this]() { return bean_therm_.ReadFahrenheit(); });
-  MedianFilter<float, float, 5> env_temp_filter_ =
-      MedianFilter<float, float, 5>(
+  MedianFilter<float, float, kFilterSize> env_temp_filter_ =
+      MedianFilter<float, float, kFilterSize>(
           [this]() { return env_therm_.ReadFahrenheit(); });
-  MedianFilter<float, float, 5> ambient_temp_filter_ =
-      MedianFilter<float, float, 5>(
+  MedianFilter<float, float, kFilterSize> ambient_temp_filter_ =
+      MedianFilter<float, float, kFilterSize>(
           [this]() { return ambient_therm_.ReadFahrenheit(); });
 
   static constexpr uint32_t kFilterRunInterval = 5;

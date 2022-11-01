@@ -88,14 +88,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         Serial.printf("WebSocket error: no params in 'setParams' message");
         return;
       }
+      JsonObject params = request_message["params"];
 
-      if (request_message.containsKey(kTemp)) {
-        command.target_temp = request_message[kTemp];
+      if (params.containsKey(kTemp)) {
+        command.target_temp = params[kTemp];
       }
-      if (request_message.containsKey(kFan)) {
-        command.fan_speed = request_message[kFan];
+      if (params.containsKey(kFan)) {
+        command.fan_speed = params[kFan];
       }
-      if (request_message.containsKey(kReset) && request_message[kReset]) {
+      if (params.containsKey(kReset)) {
+        Serial.println("Resetting fault");
         command.reset = true;
       }
     }
@@ -224,10 +226,12 @@ void loop() {
   if (transfer_in.receiveData()) {
     received_at = millis();
     transfer_out.sendData();
+    command.reset = false;
+
     oled.clearDisplay();
     oled.setCursor(0, 0);
     oled.printf("BEAN: %3.0fF\n", status.bean_temp);
-    oled.printf(" ENV: %3.0fF\n", status.bean_temp);
+    oled.printf(" ENV: %3.0fF\n", status.env_temp);
     oled.printf("%s", faultToBinaryString(status.fault));
     oled.display();
   }

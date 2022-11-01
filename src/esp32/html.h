@@ -43,7 +43,9 @@ const char index_html[] PROGMEM = R"rawliteral(
       <label for="updated">Updated:</label>
       <span id="updated"></span>
     </div>
+    <button id="reset">Reset</button>
   </div>
+
   <br/>
   <form method="post" enctype="multipart/form-data">
     <div>
@@ -75,6 +77,12 @@ socket.addEventListener('error', (event) => {
 function getData() {
   socket.send('{"command": "getData"}');  
 }
+
+function reset() {
+  socket.send('{"command": "setParams", "params": {"reset": true}}');
+}
+
+document.getElementById("reset").addEventListener("click", (event) => { reset(); });
 
 setInterval(getData, 1000);
 

@@ -18,6 +18,13 @@ void ArduinoController::Init() {
   bean_therm_.Begin();
   env_therm_.Begin();
 
+  // Filters will return 0 until they've been primed, which will cause a fault.
+  for (uint32_t n = 0; n < kFilterSize; n++) {
+    bean_temp_filter_.Run();
+    env_temp_filter_.Run();
+    ambient_temp_filter_.Run();
+  }
+
   bean_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   env_temp_filter_.SetMinRunInterval(kFilterRunInterval);
   ambient_temp_filter_.SetMinRunInterval(kFilterRunInterval);
@@ -42,6 +49,7 @@ void ArduinoController::Step() {
   // Wait for esp32 to send data. TODO: tune this
   delay(5);
   if (transfer_in_.receiveData()) {
+    ReceiveCommand(command_);
     no_comms_timer_.Reset();
   } else if (no_comms_timer_.Expired()) {
     status_.fault.no_comms = true;

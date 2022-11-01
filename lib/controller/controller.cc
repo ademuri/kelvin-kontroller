@@ -71,7 +71,7 @@ void Controller::Step() {
 void Controller::ReceiveCommand(const RunnerCommand &command) {
   temp_pid.setSetPoint(command.target_temp);
   SetFan(command.fan_speed);
-  if (command.reset) {
+  if (command.reset == true) {
     ResetStatus();
   }
 }
