@@ -46,8 +46,8 @@ void ArduinoController::Step() {
   Controller::Step();
 
   transfer_out_.sendData();
-  // Wait for esp32 to send data. TODO: tune this
-  delay(5);
+  // Wait for esp32 to send data
+  delay(3);
   if (transfer_in_.receiveData()) {
     ReceiveCommand(command_);
     no_comms_timer_.Reset();

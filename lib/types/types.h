@@ -54,6 +54,9 @@ struct RunnerCommand {
   float target_temp = 0;
   uint8_t fan_speed = 0;
   bool reset = false;
+  float p = -1;
+  float i = -1;
+  float d = -1;
 };
 
 // The serial rate for the UART between the ESP32 and STM32

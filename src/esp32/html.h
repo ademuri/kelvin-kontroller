@@ -45,6 +45,14 @@ const char index_html[] PROGMEM = R"rawliteral(
     </div>
     <button id="reset">Reset</button>
   </div>
+  <br/>
+
+  <div id="tune">
+    <div>
+      <label for="p">P</label>
+      <input type="text" id="p" value="0">
+    </div>
+  </div>
 
   <br/>
   <form method="post" enctype="multipart/form-data">
@@ -78,11 +86,21 @@ function getData() {
   socket.send('{"command": "getData"}');  
 }
 
+function sendParams(params) {
+  const obj = {"command": "setParams", "params": params};
+  socket.send(JSON.stringify(obj));
+}
+
 function reset() {
-  socket.send('{"command": "setParams", "params": {"reset": true}}');
+  sendParams({"reset": true});
 }
 
 document.getElementById("reset").addEventListener("click", (event) => { reset(); });
+
+document.getElementById("p").addEventListener("change", (event) => {
+  console.log("setting p: " + event.target.value);
+  sendParams({"p": parseFloat(event.target.value)});
+});
 
 setInterval(getData, 1000);
 

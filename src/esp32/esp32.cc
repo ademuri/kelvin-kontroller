@@ -20,6 +20,9 @@ constexpr int kTx = 17;
 constexpr char kTemp[] = "temp";
 constexpr char kFan[] = "fan";
 constexpr char kReset[] = "reset";
+constexpr char kP[] = "p";
+constexpr char kI[] = "i";
+constexpr char kD[] = "d";
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
@@ -99,6 +102,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       if (params.containsKey(kReset)) {
         Serial.println("Resetting fault");
         command.reset = true;
+      }
+      if (params.containsKey(kP)) {
+        command.p = params[kP];
+      }
+      if (params.containsKey(kI)) {
+        command.i = params[kI];
+      }
+      if (params.containsKey(kD)) {
+        command.d = params[kD];
       }
     }
   }
@@ -222,10 +234,13 @@ void setup() {
 
 void loop() {
   websocket.cleanupClients();
+  bool do_reset = command.reset;
   if (transfer_in.receiveData()) {
     received_at = millis();
     transfer_out.sendData();
-    command.reset = false;
+    if (do_reset) {
+      command.reset = false;
+    }
 
     oled.clearDisplay();
     oled.setCursor(0, 0);

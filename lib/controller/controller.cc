@@ -74,6 +74,16 @@ void Controller::ReceiveCommand(const RunnerCommand &command) {
   if (command.reset == true) {
     ResetStatus();
   }
+  if (command.p >= 0) {
+    p = command.p;
+  }
+  if (command.i >= 0) {
+    i = command.i;
+  }
+  if (command.d >= 0) {
+    d = command.d;
+  }
+  temp_pid.setGains(p, i, d);
 }
 
 void Controller::SetFan(uint8_t pwm) {

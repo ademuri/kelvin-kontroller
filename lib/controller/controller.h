@@ -85,10 +85,10 @@ class Controller {
   static constexpr float kBangBangThreshold = 50;
 
   // TODO: tune these
-  static constexpr float kP = 0.1;
-  static constexpr float kI = 0.1;
-  static constexpr float kD = 0.5;
-  AutoPIDRelay temp_pid{kSsrPeriod, kP, kI, kD};
+  float p = 0.1;
+  float i = 0.1;
+  float d = 0.5;
+  AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
 
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
