@@ -210,13 +210,12 @@ void setup() {
   Serial.println(" done.");
 
   Serial.print("Initializing display...");
-  Wire.begin(kSda, kScl, (uint32_t)400000);
-  oled.begin(/*address=*/0x3C, false);
+  Wire.begin(kSda, kScl, /*i2c frequency=*/(uint32_t)1000000);
+  oled.begin(/*address=*/0x3C, /*reset=*/false);
   oled.setRotation(1);
   oled.clearDisplay();
   oled.display();
   oled.setTextColor(SH110X_WHITE);
-  oled.setCursor(0, 0);
   oled.setTextSize(2);
   Serial.println(" done.");
 }
