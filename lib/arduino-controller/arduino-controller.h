@@ -64,7 +64,7 @@ class ArduinoController : public Controller {
 
   Max31855Thermocouple bean_therm_{kSpiNss1};
   Max31855Thermocouple env_therm_{kSpiNss2};
-  Thermistor ambient_therm_{kThermistor1, /*analog_reference_volts=*/3.3};
+  Thermistor ambient_therm_{kThermistor2, /*analog_reference_volts=*/3.3};
 
   MedianFilter<float, float, 5> bean_temp_filter_ =
       MedianFilter<float, float, 5>(

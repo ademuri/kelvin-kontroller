@@ -10,7 +10,7 @@ class Thermistor {
 
   static constexpr uint32_t kDividerOhms = 4700;
   static constexpr int kAnalogReadResolution = 10;
-  static constexpr uint32_t kAnalogReadBase = (1 << kAnalogReadResolution - 1);
+  static constexpr uint32_t kAnalogReadBase = 1 << kAnalogReadResolution;
 
   // Note: these functions don't modify *this* class, but they do modify global
   // state (analogReadResolution).
@@ -37,7 +37,7 @@ class Thermistor {
   }
 
  private:
-  const uint16_t analog_reference_volts_;
+  const float analog_reference_volts_;
   const int pin_;
 
   static const float resistance_50c_;
