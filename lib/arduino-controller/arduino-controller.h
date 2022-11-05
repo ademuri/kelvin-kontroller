@@ -77,7 +77,9 @@ class ArduinoController : public Controller {
       MedianFilter<float, float, kFilterSize>(
           [this]() { return ambient_therm_.ReadFahrenheit(); });
 
-  static constexpr uint32_t kFilterRunInterval = 5;
+  // Note: the MAX31855 takes 70-100ms to convert a temperature, and it converts
+  // continuously.
+  static constexpr uint32_t kFilterRunInterval = 100;
 
   RunnerCommand command_;
   EasyTransfer<RunnerCommand> transfer_in_{&command_};
