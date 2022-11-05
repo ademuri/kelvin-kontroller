@@ -42,6 +42,17 @@ Adafruit_SH1107 oled = Adafruit_SH1107(kScreenWidth, kScreenHeight, &Wire);
 constexpr size_t kFirmwareBufferSize = 65536;
 uint8_t firmware_buffer[kFirmwareBufferSize];
 
+const char *faultToBinaryString(const RunnerFault &fault) {
+  static constexpr size_t kBufferSize = 20;
+  static char buffer[kBufferSize];
+  snprintf(buffer, kBufferSize, "%u%u%u%u%u%u%u%u%u", fault.bean_temp_low,
+           fault.bean_temp_high, fault.env_temp_low, fault.env_temp_high,
+           fault.ambient_temp_low, fault.ambient_temp_high,
+           fault.bean_temp_read_error != 0, fault.env_temp_read_error != 0,
+           fault.no_comms);
+  return buffer;
+}
+
 // Handle a web socket message. Compatible with Artisan ().
 // For (sparse) documentation on the protocol, see:
 // Official documentation: https://artisan-scope.org/devices/websockets/
@@ -74,7 +85,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["ET"] = status.env_temp;
       data["AT"] = status.ambient_temp;
       data["FAN"] = status.fan_speed;
-      data["FAULT"] = status.fault.Faulty();
+      data["HEATER"] = status.heater_output;
+      data["FAULT"] = faultToBinaryString(status.fault);
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
@@ -139,18 +151,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
       break;
   }
 }
-
-const char *faultToBinaryString(const RunnerFault &fault) {
-  static constexpr size_t kBufferSize = 20;
-  static char buffer[kBufferSize];
-  snprintf(buffer, kBufferSize, "%u%u%u%u%u%u%u%u%u", fault.bean_temp_low,
-           fault.bean_temp_high, fault.env_temp_low, fault.env_temp_high,
-           fault.ambient_temp_low, fault.ambient_temp_high,
-           fault.bean_temp_read_error != 0, fault.env_temp_read_error != 0,
-           fault.no_comms);
-  return buffer;
-}
-
 void setup() {
   Serial.begin(115200);
   WiFi.begin(kSsid, kPassword);

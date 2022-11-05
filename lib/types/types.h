@@ -48,6 +48,7 @@ struct RunnerStatus {
   float env_temp = 0;
   float ambient_temp = 0;
   uint8_t fan_speed = 0;
+  float heater_output = 0;
 };
 
 struct RunnerCommand {

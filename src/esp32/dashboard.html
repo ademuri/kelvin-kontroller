@@ -116,6 +116,12 @@
       y: [],
       yaxis: 'y2',
       mode: 'lines',
+      name: 'Heater',
+    },
+    {
+      y: [],
+      yaxis: 'y2',
+      mode: 'lines',
       name: 'Fan',
     },
   ];
@@ -130,10 +136,10 @@
       range: [50, 600],
     },
     yaxis2: {
-      title: 'Fan',
+      title: 'PWM',
       side: 'right',
       overlaying: 'y',
-      range: [0, 255],
+      range: [0, 1.01],
     }
   };
 
@@ -152,8 +158,9 @@
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
-      y: [[response.data.ET], [response.data.BT], [setTemp], [response.data.FAN]],
-    }, [0, 1, 2, 3]);
+      y: [[response.data.ET], [response.data.BT], [setTemp],
+          [response.data.HEATER], [response.data.FAN / 255]],
+    }, [0, 1, 2, 3, 4]);
 
     seconds++;
     const range = 300;
