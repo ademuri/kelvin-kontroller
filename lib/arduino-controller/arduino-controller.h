@@ -80,8 +80,8 @@ class ArduinoController : public Controller {
   static constexpr uint32_t kFilterRunInterval = 5;
 
   RunnerCommand command_;
-  EasyTransfer transfer_in_;
-  EasyTransfer transfer_out_;
+  EasyTransfer<RunnerCommand> transfer_in_{&command_};
+  EasyTransfer<RunnerStatus> transfer_out_{&status_};
 
   static constexpr uint32_t kNoCommsTimeout = 10 * 1000;
   CountDownTimer no_comms_timer_{kNoCommsTimeout};

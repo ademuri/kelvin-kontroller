@@ -26,8 +26,8 @@ AsyncWebSocket websocket("/websocket");
 
 RunnerCommand command;
 RunnerStatus status;
-EasyTransfer transfer_in;
-EasyTransfer transfer_out;
+EasyTransfer<RunnerStatus> transfer_in{&status};
+EasyTransfer<RunnerCommand> transfer_out{&command};
 uint32_t received_at = 0;
 
 constexpr uint8_t kScreenWidth = 64;
@@ -205,8 +205,8 @@ void setup() {
 
   Serial.print("Initializing serial...");
   Serial2.begin(kSerialBaud, SERIAL_8N1, kRx, kTx);
-  transfer_in.begin(details(status), &Serial2);
-  transfer_out.begin(details(command), &Serial2);
+  transfer_in.begin(&Serial2);
+  transfer_out.begin(&Serial2);
   Serial.println(" done.");
 
   Serial.print("Initializing display...");

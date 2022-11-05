@@ -31,8 +31,8 @@ void ArduinoController::Init() {
 
   Serial1.begin(kSerialBaud);
 
-  transfer_in_.begin(details(command_), &Serial1);
-  transfer_out_.begin(details(status_), &Serial1);
+  transfer_in_.begin(&Serial1);
+  transfer_out_.begin(&Serial1);
 
   // TODO: check sensor state and enable the relay
   Controller::Init();
