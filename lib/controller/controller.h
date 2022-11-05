@@ -68,7 +68,7 @@ class Controller {
 
   bool relay_value_ = 1;
 
-  uint8_t fan_min_ = 0;
+  uint8_t fan_min_ = 100;
   uint8_t fan_max_ = 255;
 
  private:
@@ -79,7 +79,7 @@ class Controller {
   // TODO: tune this
   static constexpr uint32_t kSsrPeriod = 500;
   // TODO: tune this, or possibly remove it if loop timing is consistent
-  static constexpr uint32_t kPidPeriod = 10;
+  static constexpr uint32_t kPidPeriod = 80;
   // If the target temp is farther than this from the setpoint, use simple
   // on-off control.
   static constexpr float kBangBangThreshold = 50;

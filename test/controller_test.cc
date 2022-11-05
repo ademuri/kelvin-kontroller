@@ -194,6 +194,7 @@ TEST(Controller, CommandSetsPidTemp) {
   controller.SetBeanTempF(70);
   controller.SetEnvTempF(70);
   controller.SetAmbientTempF(70);
+  controller.SetFan(255);
   controller.Step();
 
   EXPECT_EQ(controller.GetHeaterValue(), false);
@@ -213,6 +214,33 @@ TEST(Controller, CommandSetsPidTemp) {
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
       << to_string(controller.GetStatus());
   EXPECT_EQ(controller.GetHeaterValue(), false);
+}
+
+TEST(Controller, OnlySetsHeaterIfFanIsOn) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFan(0);
+  controller.Step();
+
+  EXPECT_EQ(controller.GetHeaterValue(), false);
+
+  AdvanceMillis(10);
+  RunnerCommand command{};
+  command.target_temp = 400;
+  controller.ReceiveCommand(command);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
+  EXPECT_EQ(controller.GetHeaterValue(), false);
+
+  controller.SetFan(255);
+  controller.Step();
+  EXPECT_EQ(controller.GetHeaterValue(), true);
+  EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
+      << to_string(controller.GetStatus());
 }
 
 TEST(RunnerStatus, FaultyOnNoComms) {
