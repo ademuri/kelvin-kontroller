@@ -82,12 +82,12 @@ class Controller {
   static constexpr uint32_t kPidPeriod = 80;
   // If the target temp is farther than this from the setpoint, use simple
   // on-off control.
-  static constexpr float kBangBangThreshold = 50;
+  static constexpr float kBangBangThreshold = 0;
 
   // TODO: tune these
   float p = 0.1;
-  float i = 0.1;
-  float d = 0.5;
+  float i = 0;
+  float d = 0;
   AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
 
   // Safety constants
