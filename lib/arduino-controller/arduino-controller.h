@@ -79,7 +79,7 @@ class ArduinoController : public Controller {
 
   // Note: the MAX31855 takes 70-100ms to convert a temperature, and it converts
   // continuously.
-  static constexpr uint32_t kFilterRunInterval = 100;
+  static constexpr uint32_t kFilterRunInterval = 80;
 
   RunnerCommand command_;
   EasyTransfer<RunnerCommand> transfer_in_{&command_};
