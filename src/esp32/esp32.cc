@@ -9,6 +9,9 @@
 #include <WiFi.h>
 #include <Wire.h>
 
+#include <bitset>
+#include <sstream>
+
 #include "constants.h"
 #include "html.h"
 #include "types.h"
@@ -43,13 +46,39 @@ constexpr size_t kFirmwareBufferSize = 65536;
 uint8_t firmware_buffer[kFirmwareBufferSize];
 
 const char *faultToBinaryString(const RunnerFault &fault) {
-  static constexpr size_t kBufferSize = 20;
+  static constexpr size_t kBufferSize = 500;
   static char buffer[kBufferSize];
-  snprintf(buffer, kBufferSize, "%u%u%u%u%u%u%u%u%u", fault.bean_temp_low,
-           fault.bean_temp_high, fault.env_temp_low, fault.env_temp_high,
-           fault.ambient_temp_low, fault.ambient_temp_high,
-           fault.bean_temp_read_error != 0, fault.env_temp_read_error != 0,
-           fault.no_comms);
+  std::stringstream stream;
+
+  if (fault.bean_temp_high) {
+    stream << "bean_temp_high, ";
+  }
+  if (fault.bean_temp_low) {
+    stream << "bean_temp_low, ";
+  }
+  if (fault.env_temp_high) {
+    stream << "env_temp_high, ";
+  }
+  if (fault.env_temp_low) {
+    stream << "env_temp_low, ";
+  }
+  if (fault.ambient_temp_high) {
+    stream << "ambient_temp_high, ";
+  }
+  if (fault.ambient_temp_low) {
+    stream << "ambient_temp_low, ";
+  }
+  if (fault.bean_temp_read_error != 0) {
+    stream << "bean_error: "
+           << std::bitset<3>(fault.bean_temp_read_error).to_string() << ", ";
+  }
+  if (fault.env_temp_read_error != 0) {
+    stream << "env_error: "
+           << std::bitset<3>(fault.env_temp_read_error).to_string() << ", ";
+  }
+
+  snprintf(buffer, kBufferSize, "%s", stream.str().c_str());
+
   return buffer;
 }
 
