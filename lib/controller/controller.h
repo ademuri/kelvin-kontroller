@@ -95,11 +95,6 @@ class Controller {
   float d = 0;
   AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
 
-  MedianFilter<bool, bool, 9> fault_filter_ =
-      MedianFilter<bool, bool, 9>([this]() {
-        return temp_out_of_range_ || BeanTempReadError() || EnvTempReadError();
-      });
-
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
   static constexpr float kMinAmbientTemp = 30;
@@ -125,4 +120,12 @@ class Controller {
 
   // Allow sensors to stabilize before enabling the control loop
   static constexpr uint32_t kTurnOnDelay = 2000;
+
+ public:
+  // Public for testing, so that tests can set millis on this.
+  MedianFilter<uint32_t, uint32_t, 9> fault_filter_ =
+      MedianFilter<uint32_t, uint32_t, 9>([this]() {
+        return temp_out_of_range_ || status_.fault_since_reset.no_comms ||
+               BeanTempReadError() || EnvTempReadError();
+      });
 };

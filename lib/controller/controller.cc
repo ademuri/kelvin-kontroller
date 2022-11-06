@@ -50,10 +50,10 @@ void Controller::Step() {
     temp_out_of_range_ = true;
   }
 
-  status_.fault_since_reset.bean_temp_read_error =
-      std::max(status_.fault_since_reset.bean_temp_read_error, BeanTempReadError());
-  status_.fault_since_reset.env_temp_read_error =
-      std::max(status_.fault_since_reset.env_temp_read_error, EnvTempReadError());
+  status_.fault_since_reset.bean_temp_read_error = std::max(
+      status_.fault_since_reset.bean_temp_read_error, BeanTempReadError());
+  status_.fault_since_reset.env_temp_read_error = std::max(
+      status_.fault_since_reset.env_temp_read_error, EnvTempReadError());
 
   status_.bean_temp = bean_temp;
   status_.env_temp = env_temp;
@@ -62,7 +62,8 @@ void Controller::Step() {
 
   fault_filter_.Run();
 
-  if (fault_filter_.GetFilteredValue()) {
+  if (fault_filter_.GetFilteredValue() != 0 || status_.fatal_fault) {
+    status_.fatal_fault = true;
     if (relay_value_ == 1) {
       // When a fault occurs, fail safe: disable the heater, turn the fan to
       // maximum, and enable the stir.

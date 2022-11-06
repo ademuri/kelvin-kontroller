@@ -10,13 +10,18 @@
 namespace {
 
 std::ostream& operator<<(std::ostream& os, const RunnerStatus& status) {
-  return os << "RunnerStatus: {fault: " << status.fault_since_reset.bean_temp_low
-            << status.fault_since_reset.bean_temp_high << status.fault_since_reset.env_temp_low
-            << status.fault_since_reset.env_temp_high << status.fault_since_reset.ambient_temp_low
-            << status.fault_since_reset.ambient_temp_high << ", bean_temp_read_error: "
+  return os << "RunnerStatus: {fault: "
+            << status.fault_since_reset.bean_temp_low
+            << status.fault_since_reset.bean_temp_high
+            << status.fault_since_reset.env_temp_low
+            << status.fault_since_reset.env_temp_high
+            << status.fault_since_reset.ambient_temp_low
+            << status.fault_since_reset.ambient_temp_high
+            << ", bean_temp_read_error: "
             << std::to_string(status.fault_since_reset.bean_temp_read_error)
             << ", env_temp_read_error: "
-            << std::to_string(status.fault_since_reset.env_temp_read_error) << "}";
+            << std::to_string(status.fault_since_reset.env_temp_read_error)
+            << "}";
 }
 
 std::string to_string(const RunnerStatus& status) {
@@ -28,6 +33,9 @@ std::string to_string(const RunnerStatus& status) {
 TEST(Controller, SetsFaultIfTempRangesExceeded) {
   FakeController controller;
   controller.Init();
+  // TODO: this skips the turn-on delay, and affects all tests. Extract this
+  // into a test fixture.
+  AdvanceMillis(2000);
 
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
@@ -327,6 +335,39 @@ TEST(RunnerStatus, FaultyOnNoComms) {
 
   status.fault_since_reset.no_comms = true;
   EXPECT_EQ(status.fault_since_reset.Faulty(), true);
+}
+
+TEST(Controller, SafeModeOnFault) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFanTarget(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), false);
+  EXPECT_EQ(controller.GetStirValue(), false);
+
+  controller.SetBeanTempReadError(1);
+  for (uint32_t i = 0; i < 10; i++) {
+    AdvanceMillis(200);
+    controller.fault_filter_.SetMillis(millis());
+    controller.Step();
+  }
+  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true);
+  EXPECT_EQ(controller.GetStatus().fatal_fault, true);
+  EXPECT_EQ(controller.GetFanValue(), 255);
+  EXPECT_EQ(controller.GetStirValue(), true);
+
+  controller.SetBeanTempReadError(0);
+  for (uint32_t i = 0; i < 100; i++) {
+    AdvanceMillis(200);
+    controller.fault_filter_.SetMillis(millis());
+    controller.Step();
+    EXPECT_EQ(controller.GetStatus().fatal_fault, true);
+    EXPECT_EQ(controller.GetFanValue(), 255);
+    EXPECT_EQ(controller.GetStirValue(), true);
+  }
 }
 
 }  // namespace

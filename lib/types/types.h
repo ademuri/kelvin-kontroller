@@ -44,7 +44,7 @@ struct RunnerFault {
 
 struct RunnerStatus {
   RunnerFault fault_since_reset = {};
-  RunnerFault fatal_fault = {};
+  bool fatal_fault = false;
   float bean_temp = 0;
   float env_temp = 0;
   float ambient_temp = 0;
