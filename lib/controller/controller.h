@@ -29,6 +29,7 @@ class Controller {
   void ReceiveCommand(const RunnerCommand &command);
 
   // Actuators
+  void SetFanTarget(uint8_t pwm);
   virtual void SetFan(uint8_t pwm);
   virtual void SetHeater(bool on);
   virtual void SetStir(bool on);

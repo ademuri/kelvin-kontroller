@@ -83,7 +83,7 @@ void Controller::Step() {
 void Controller::ReceiveCommand(const RunnerCommand &command) {
   set_temp_ = command.target_temp;
   temp_pid.setSetPoint(command.target_temp);
-  SetFan(command.fan_speed);
+  SetFanTarget(command.fan_speed);
   if (command.reset == true) {
     ResetStatus();
   }
@@ -99,8 +99,12 @@ void Controller::ReceiveCommand(const RunnerCommand &command) {
   temp_pid.setGains(p, i, d);
 }
 
-void Controller::SetFan(uint8_t pwm) {
+void Controller::SetFanTarget(uint8_t pwm) {
   fan_target_ = pwm;
+  SetFan(fan_target_);
+}
+
+void Controller::SetFan(uint8_t pwm) {
   if (pwm > 0) {
     fan_value_ = std::min(fan_max_, pwm);
     fan_value_ = std::max(fan_min_, pwm);
