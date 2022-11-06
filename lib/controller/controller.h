@@ -94,7 +94,7 @@ class Controller {
 
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
-  static constexpr float kMinAmbientTemp = 40;
+  static constexpr float kMinAmbientTemp = 30;
   // If the ambient is above this, the SSR may overheat
   static constexpr float kMaxAmbientTemp = 120;
 
@@ -114,4 +114,7 @@ class Controller {
 
   // If the heater are above this temp, fan should be on
   static constexpr float kEnvFanTemp = 140;
+
+  // Allow sensors to stabilize before enabling the control loop
+  static constexpr uint32_t kTurnOnDelay = 2000;
 };

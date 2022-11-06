@@ -17,6 +17,10 @@ void Controller::Step() {
   const float env_temp = ReadEnvTempF();
   const float ambient_temp = ReadAmbientTempF();
 
+  if (millis() < kTurnOnDelay) {
+    return;
+  }
+
   if (bean_temp < kMinBeanTemp) {
     status_.fault.bean_temp_low = 1;
   }
