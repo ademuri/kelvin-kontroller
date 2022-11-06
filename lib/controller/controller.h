@@ -108,4 +108,10 @@ class Controller {
 
   // When the bean temp is above this, stir should be enabled.
   static constexpr float kStirTemp = 120;
+
+  // If the beans are above this temp, fan should be on
+  static constexpr float kBeanFanTemp = 180;
+
+  // If the heater are above this temp, fan should be on
+  static constexpr float kEnvFanTemp = 140;
 };

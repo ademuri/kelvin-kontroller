@@ -237,11 +237,88 @@ TEST(Controller, OnlySetsHeaterIfFanIsOn) {
   EXPECT_EQ(controller.GetHeaterValue(), false);
 
   AdvanceMillis(100);
-  controller.SetFan(255);
+  controller.SetFanTarget(255);
   controller.Step();
   EXPECT_EQ(controller.GetHeaterValue(), true);
   EXPECT_EQ(controller.GetStatus().fault.Faulty(), false)
       << to_string(controller.GetStatus());
+}
+
+TEST(Controller, RunsFanWhileBeansStillHot) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFanTarget(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 0);
+
+  controller.SetBeanTempF(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 255);
+
+  controller.SetBeanTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 0);
+
+  controller.SetBeanTempF(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 255);
+  controller.SetFanTarget(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 200);
+  controller.SetBeanTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 200);
+}
+
+TEST(Controller, RunsFanWhileEnvStillHot) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFanTarget(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 0);
+
+  controller.SetEnvTempF(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 255);
+
+  controller.SetEnvTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 0);
+
+  controller.SetEnvTempF(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 255);
+  controller.SetFanTarget(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 200);
+  controller.SetEnvTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetFanValue(), 200);
+}
+
+TEST(Controller, StirsWhileHot) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFanTarget(0);
+  controller.Step();
+  EXPECT_EQ(controller.GetStirValue(), false);
+
+  controller.SetBeanTempF(200);
+  controller.Step();
+  EXPECT_EQ(controller.GetStirValue(), true);
+
+  controller.SetBeanTempF(70);
+  controller.Step();
+  EXPECT_EQ(controller.GetStirValue(), false);
 }
 
 TEST(RunnerStatus, FaultyOnNoComms) {

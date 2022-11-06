@@ -65,12 +65,18 @@ void Controller::Step() {
   }
 
   temp_pid.run(bean_temp);
-  if (GetFanValue() > 0) {
+  if (fan_target_ > 0 && fan_value_ > 0) {
     status_.heater_output = temp_pid.getOutput();
     SetHeater(temp_pid.getRelayState());
   } else {
     status_.heater_output = 0;
     SetHeater(false);
+    if ((bean_temp > kBeanFanTemp || env_temp > kEnvFanTemp) &&
+        fan_target_ == 0) {
+      SetFan(255);
+    } else {
+      SetFan(fan_target_);
+    }
   }
 
   if (bean_temp > kStirTemp || set_temp_ > 0) {
