@@ -54,7 +54,7 @@ void ArduinoController::Step() {
     ReceiveCommand(command_);
     no_comms_timer_.Reset();
   } else if (no_comms_timer_.Expired()) {
-    status_.fault.no_comms = true;
+    status_.fault_since_reset.no_comms = true;
   }
 }
 

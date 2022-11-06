@@ -46,6 +46,17 @@ constexpr size_t kFirmwareBufferSize = 65536;
 uint8_t firmware_buffer[kFirmwareBufferSize];
 
 const char *faultToBinaryString(const RunnerFault &fault) {
+  static constexpr size_t kBufferSize = 20;
+  static char buffer[kBufferSize];
+  snprintf(buffer, kBufferSize, "%u%u%u%u%u%u%u%u%u", fault.bean_temp_low,
+           fault.bean_temp_high, fault.env_temp_low, fault.env_temp_high,
+           fault.ambient_temp_low, fault.ambient_temp_high,
+           fault.bean_temp_read_error != 0, fault.env_temp_read_error != 0,
+           fault.no_comms);
+  return buffer;
+}
+
+const char *faultToDebugString(const RunnerFault &fault) {
   static constexpr size_t kBufferSize = 500;
   static char buffer[kBufferSize];
   std::stringstream stream;
@@ -115,7 +126,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["AT"] = status.ambient_temp;
       data["FAN"] = status.fan_speed;
       data["HEATER"] = status.heater_output;
-      data["FAULT"] = faultToBinaryString(status.fault);
+      data["FAULT"] = faultToDebugString(status.fault_since_reset);
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
@@ -275,7 +286,7 @@ void loop() {
     oled.setCursor(0, 0);
     oled.printf("BEAN: %3.0fF\n", status.bean_temp);
     oled.printf(" ENV: %3.0fF\n", status.env_temp);
-    oled.printf("%s", faultToBinaryString(status.fault));
+    oled.printf("%s", faultToBinaryString(status.fault_since_reset));
     oled.display();
   }
 }

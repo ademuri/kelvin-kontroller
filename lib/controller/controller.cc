@@ -10,6 +10,7 @@ void Controller::Init() {
   SetRelay(true);
   temp_pid.setTimeStep(kPidPeriod);
   temp_pid.setBangBang(kBangBangThreshold);
+  fault_filter_.SetMinRunInterval(100);
 }
 
 void Controller::Step() {
@@ -21,38 +22,47 @@ void Controller::Step() {
     return;
   }
 
+  temp_out_of_range_ = false;
   if (bean_temp < kMinBeanTemp) {
-    status_.fault.bean_temp_low = 1;
+    status_.fault_since_reset.bean_temp_low = 1;
+    temp_out_of_range_ = true;
   }
   if (bean_temp > kMaxBeanTemp) {
-    status_.fault.bean_temp_high = 1;
+    status_.fault_since_reset.bean_temp_high = 1;
+    temp_out_of_range_ = true;
   }
 
   if (env_temp < kMinEnvTemp) {
-    status_.fault.env_temp_low = 1;
+    status_.fault_since_reset.env_temp_low = 1;
+    temp_out_of_range_ = true;
   }
   if (env_temp > kMaxEnvTemp) {
-    status_.fault.env_temp_high = 1;
+    status_.fault_since_reset.env_temp_high = 1;
+    temp_out_of_range_ = true;
   }
 
   if (ambient_temp < kMinAmbientTemp) {
-    status_.fault.ambient_temp_low = 1;
+    status_.fault_since_reset.ambient_temp_low = 1;
+    temp_out_of_range_ = true;
   }
   if (ambient_temp > kMaxAmbientTemp) {
-    status_.fault.ambient_temp_high = 1;
+    status_.fault_since_reset.ambient_temp_high = 1;
+    temp_out_of_range_ = true;
   }
 
-  status_.fault.bean_temp_read_error =
-      std::max(status_.fault.bean_temp_read_error, BeanTempReadError());
-  status_.fault.env_temp_read_error =
-      std::max(status_.fault.env_temp_read_error, EnvTempReadError());
+  status_.fault_since_reset.bean_temp_read_error =
+      std::max(status_.fault_since_reset.bean_temp_read_error, BeanTempReadError());
+  status_.fault_since_reset.env_temp_read_error =
+      std::max(status_.fault_since_reset.env_temp_read_error, EnvTempReadError());
 
   status_.bean_temp = bean_temp;
   status_.env_temp = env_temp;
   status_.ambient_temp = ambient_temp;
   status_.fan_speed = GetFanValue();
 
-  if (status_.fault.Faulty()) {
+  fault_filter_.Run();
+
+  if (fault_filter_.GetFilteredValue()) {
     if (relay_value_ == 1) {
       // When a fault occurs, fail safe: disable the heater, turn the fan to
       // maximum, and enable the stir.

@@ -6,6 +6,7 @@
 
 #include <AutoPID.h>
 #include <arduino-timer.h>
+#include <median-filter.h>
 
 class Controller {
  protected:
@@ -86,11 +87,18 @@ class Controller {
   // on-off control.
   static constexpr float kBangBangThreshold = 0;
 
+  bool temp_out_of_range_ = false;
+
   // TODO: tune these
   float p = 0.1;
   float i = 0;
   float d = 0;
   AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
+
+  MedianFilter<bool, bool, 9> fault_filter_ =
+      MedianFilter<bool, bool, 9>([this]() {
+        return temp_out_of_range_ || BeanTempReadError() || EnvTempReadError();
+      });
 
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
