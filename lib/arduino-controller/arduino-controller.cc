@@ -15,6 +15,8 @@ void ArduinoController::Init() {
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
 
+  analogWriteFrequency(30000);
+
   bean_therm_.Begin();
   env_therm_.Begin();
 

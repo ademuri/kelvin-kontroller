@@ -65,10 +65,11 @@ class Controller {
   uint8_t fan_value_ = 0;
   bool heater_value_ = 0;
   bool stir_value_ = 0;
+  float set_temp_ = 0;
 
   bool relay_value_ = 1;
 
-  uint8_t fan_min_ = 100;
+  uint8_t fan_min_ = 150;
   uint8_t fan_max_ = 255;
 
  private:
@@ -103,4 +104,7 @@ class Controller {
   static constexpr float kMinEnvTemp = kMinAmbientTemp;
   // TODO: tune this based on thermocouple placement
   static constexpr float kMaxEnvTemp = 800;
+
+  // When the bean temp is above this, stir should be enabled.
+  static constexpr float kStirTemp = 120;
 };

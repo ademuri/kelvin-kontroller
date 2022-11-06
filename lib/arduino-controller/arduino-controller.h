@@ -41,7 +41,7 @@ class ArduinoController : public Controller {
   static constexpr int kEspUsartRx = PA9;
   static constexpr int kEspUsartTx = PA10;
 
-  static constexpr bool kForceDisableFan = false;
+  static constexpr bool kForceDisableFan = true;
   static constexpr int kFanEn = PA7;
   static constexpr int kFanPwmOut = PA11;
   static constexpr int kFanTach = PD1;

@@ -72,9 +72,16 @@ void Controller::Step() {
     status_.heater_output = 0;
     SetHeater(false);
   }
+
+  if (bean_temp > kStirTemp || set_temp_ > 0) {
+    SetStir(true);
+  } else {
+    SetStir(false);
+  }
 }
 
 void Controller::ReceiveCommand(const RunnerCommand &command) {
+  set_temp_ = command.target_temp;
   temp_pid.setSetPoint(command.target_temp);
   SetFan(command.fan_speed);
   if (command.reset == true) {
@@ -97,6 +104,8 @@ void Controller::SetFan(uint8_t pwm) {
   if (pwm > 0) {
     fan_value_ = std::min(fan_max_, pwm);
     fan_value_ = std::max(fan_min_, pwm);
+  } else {
+    fan_value_ = 0;
   }
 }
 
