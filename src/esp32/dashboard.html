@@ -79,6 +79,10 @@
     <div id="display-panel"></div>
   </div>
 
+  <div>
+    <textarea id="csv"></textarea>
+  </div>
+
   <br />
   <form method="post" enctype="multipart/form-data" style="visibility: hidden;">
     <div>
@@ -159,8 +163,11 @@
 
     Plotly.extendTraces(displayPanel, {
       y: [[response.data.ET], [response.data.BT], [setTemp],
-          [response.data.HEATER], [response.data.FAN / 255]],
+      [response.data.HEATER], [response.data.FAN / 255]],
     }, [0, 1, 2, 3, 4]);
+    document.getElementById("csv").value += seconds + ", " +
+        response.data.ET + ", " + response.data.BT + ", " +
+        setTemp + ", " + response.data.HEATER + ", " + response.data.FAN / 255 + "\n";
 
     seconds++;
     const range = 300;

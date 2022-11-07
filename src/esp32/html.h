@@ -81,7 +81,11 @@ const char index_html[] PROGMEM = R"rawliteral(
         </div>
       </div>
     </div>
-    <div id="display-panel" style="width:800px; height:250px;"> </div>
+    <div id="display-panel"></div>
+  </div>
+
+  <div>
+    <textarea id="csv"></textarea>
   </div>
 
   <br />
@@ -121,11 +125,17 @@ const char index_html[] PROGMEM = R"rawliteral(
       y: [],
       yaxis: 'y2',
       mode: 'lines',
+      name: 'Heater',
+    },
+    {
+      y: [],
+      yaxis: 'y2',
+      mode: 'lines',
       name: 'Fan',
     },
   ];
   const layout = {
-    width: 800,
+    width: 1000,
     height: 500,
     xaxis: {
       title: 'Time, seconds',
@@ -135,10 +145,10 @@ const char index_html[] PROGMEM = R"rawliteral(
       range: [50, 600],
     },
     yaxis2: {
-      title: 'Fan',
+      title: 'PWM',
       side: 'right',
       overlaying: 'y',
-      range: [0, 255],
+      range: [0, 1.01],
     }
   };
 
@@ -157,11 +167,15 @@ const char index_html[] PROGMEM = R"rawliteral(
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
-      y: [[response.data.ET], [response.data.BT], [setTemp], [response.data.FAN]],
-    }, [0, 1, 2, 3]);
+      y: [[response.data.ET], [response.data.BT], [setTemp],
+      [response.data.HEATER], [response.data.FAN / 255]],
+    }, [0, 1, 2, 3, 4]);
+    document.getElementById("csv").value += seconds + ", " +
+        response.data.ET + ", " + response.data.BT + ", " +
+        setTemp + ", " + response.data.HEATER + ", " + response.data.FAN / 255 + "\n";
 
     seconds++;
-    const range = 120;
+    const range = 300;
     const min = seconds > range ? (seconds - range) : 0;
     const max = seconds > range ? seconds : range;
     const layoutUpdate = {
