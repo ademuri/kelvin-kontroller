@@ -103,11 +103,11 @@ class Controller {
 
   static constexpr float kMinBeanTemp = kMinAmbientTemp;
   // If the beans are above this temp, they are likely to start on fire
-  static constexpr float kMaxBeanTemp = 500;
+  static constexpr float kMaxBeanTemp = 600;
 
   static constexpr float kMinEnvTemp = kMinAmbientTemp;
   // TODO: tune this based on thermocouple placement
-  static constexpr float kMaxEnvTemp = 800;
+  static constexpr float kMaxEnvTemp = 1200;
 
   // When the bean temp is above this, stir should be enabled.
   static constexpr float kStirTemp = 120;
