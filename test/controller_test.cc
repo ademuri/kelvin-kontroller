@@ -57,7 +57,7 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
 
-  controller.SetBeanTempF(600);
+  controller.SetBeanTempF(1000);
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
       << to_string(controller.GetStatus());
@@ -73,7 +73,7 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
 
-  controller.SetEnvTempF(900);
+  controller.SetEnvTempF(1500);
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
       << to_string(controller.GetStatus());
