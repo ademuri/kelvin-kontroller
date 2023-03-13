@@ -66,7 +66,7 @@ class ArduinoController : public Controller {
   Max31855Thermocouple env_therm_{kSpiNss2};
   Thermistor ambient_therm_{kThermistor2, /*analog_reference_volts=*/3.3};
 
-  static constexpr uint32_t kFilterSize = 5;
+  static constexpr uint32_t kFilterSize = 7;
   MedianFilter<float, float, kFilterSize> bean_temp_filter_ =
       MedianFilter<float, float, kFilterSize>(
           [this]() { return bean_therm_.ReadFahrenheit(); });
