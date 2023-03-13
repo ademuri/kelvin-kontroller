@@ -71,7 +71,7 @@ class Controller {
 
   bool relay_value_ = 1;
 
-  uint8_t fan_min_ = 150;
+  uint8_t fan_min_ = 20;
   uint8_t fan_max_ = 255;
 
  private:

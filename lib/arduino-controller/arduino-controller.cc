@@ -15,7 +15,7 @@ void ArduinoController::Init() {
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
 
-  analogWriteFrequency(500);
+  analogWriteFrequency(50);
 
   bean_therm_.Begin();
   env_therm_.Begin();
@@ -60,7 +60,7 @@ void ArduinoController::Step() {
 
 void ArduinoController::SetFan(uint8_t pwm) {
   Controller::SetFan(pwm);
-  analogWrite(kFanPwmOut, fan_value_);
+  analogWrite(kFanEn, fan_value_);
 }
 
 void ArduinoController::SetHeater(bool on) {
