@@ -46,6 +46,14 @@ const char index_html[] PROGMEM = R"rawliteral(
     #reset-graph-container {
       margin-top: 3em;
     }
+
+    #fatal-fault {
+      background-color: green;
+    }
+
+    #fatal-fault.fault {
+      background-color: red;
+    }
   </style>
 </head>
 
@@ -73,6 +81,10 @@ const char index_html[] PROGMEM = R"rawliteral(
         <div>
           <label for="fault">Fault:</label>
           <span id="fault"></span>
+        </div>
+        <div>
+          <label for="fatal-fault">Running: </label>
+          <span id="fatal-fault"></span>
         </div>
         <div>
           <label for="updated">Updated:</label>
@@ -208,6 +220,8 @@ const char index_html[] PROGMEM = R"rawliteral(
     document.getElementById("et").innerHTML = envTemp;
     document.getElementById("at").innerHTML = ambientTemp;
     document.getElementById("fault").innerHTML = response.data.FAULT;
+    document.getElementById("fatal-fault").innerHTML = response.data.FATAL_FAULT;
+    document.getElementById("fatal-fault").classList = response.data.FATAL_FAULT === true ? [] : ['fault'];
     document.getElementById("fan").innerHTML = response.data.FAN;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 

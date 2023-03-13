@@ -127,6 +127,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["FAN"] = status.fan_speed;
       data["HEATER"] = status.heater_output;
       data["FAULT"] = faultToDebugString(status.fault_since_reset);
+      data["FATAL_FAULT"] = status.fatal_fault;
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
