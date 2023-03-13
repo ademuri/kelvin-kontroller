@@ -201,6 +201,8 @@
   const socket = new WebSocket('ws://roaster.local:80/websocket');
   let seconds = 0;
   let setTemp = 0;
+  // https://marriedtotheseacomics.com/post/103884129802/stop-hitting-yourself-from-married-to-the-sea
+  let ignoreNextRelayout = true;
   let autoscaleX = true;
 
   socket.addEventListener('message', (event) => {
@@ -215,8 +217,9 @@
     document.getElementById("et").innerHTML = envTemp;
     document.getElementById("at").innerHTML = ambientTemp;
     document.getElementById("fault").innerHTML = response.data.FAULT;
-    document.getElementById("fatal-fault").innerHTML = response.data.FATAL_FAULT;
-    document.getElementById("fatal-fault").classList = response.data.FATAL_FAULT === true ? [] : ['fault'];
+    document.getElementById("fatal-fault").innerHTML = !response.data.FATAL_FAULT;
+    document.getElementById("fatal-fault").classList =
+      response.data.FATAL_FAULT === true ? ['fault'] : [];
     document.getElementById("fan").innerHTML = response.data.FAN;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
@@ -238,17 +241,24 @@
           range: [min, max],
         },
       };
+      ignoreNextRelayout = true;
       Plotly.relayout(displayPanel, layoutUpdate);
     }
   });
 
   displayPanel.on('plotly_relayout', (event) => {
-    autoscaleX = false;
+    if (ignoreNextRelayout) {
+      ignoreNextRelayout = false;
+    } else {
+      autoscaleX = false;
+    }
   });
 
   // See https://plotly.com/javascript/zoom-events/
-  document.getElementById("autoscale").addEventListener("click",
-    (event) => { autoscaleX = true; });
+  document.getElementById("autoscale").addEventListener("click", (event) => {
+    autoscaleX = true;
+    ignoreNextRelayout = true;
+  });
 
   function resetCsv() {
     document.getElementById("csv").value = "seconds, env_temp, bean_temp, set_temp, heater, fan\n";
