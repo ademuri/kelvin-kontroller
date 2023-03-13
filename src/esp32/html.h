@@ -22,6 +22,30 @@ const char index_html[] PROGMEM = R"rawliteral(
     .error {
       background-color: red;
     }
+
+    #csv {
+      width: 35em;
+      margin-top: 1em;
+    }
+
+    input[type="text"] {
+      width: 3em;
+      font-size: 0.7rem;
+    }
+
+    #tune {
+      float: left;
+      width: 15%;
+    }
+
+    #display-panel {
+      float: left;
+      width: 85%;
+    }
+
+    #reset-graph-container {
+      margin-top: 3em;
+    }
   </style>
 </head>
 
@@ -54,34 +78,42 @@ const char index_html[] PROGMEM = R"rawliteral(
           <label for="updated">Updated:</label>
           <span id="updated"></span>
         </div>
-        <button id="reset">Reset</button>
+        <button id="reset">Reset controller</button>
       </div>
       <br />
 
-      <div id="tune">
-        <div>
-          <label for="p">P</label>
-          <input type="text" id="p" value="0">
+      <div id="tune-and-graph">
+        <div id="tune">
+          <div>
+            <label for="p">P</label>
+            <input type="text" id="p" value="0">
+          </div>
+          <div>
+            <label for="i">I</label>
+            <input type="text" id="i" value="0">
+          </div>
+          <div>
+            <label for="d">D</label>
+            <input type="text" id="d" value="0">
+          </div>
+          <div>
+            <label for="set-fan">Fan</label>
+            <input type="text" id="set-fan" value="0">
+          </div>
+          <div>
+            <label for="set-temp">Set temp</label>
+            <input type="text" id="set-temp" value="0">
+          </div>
+          <div>
+            <button id="autoscale">Autoscale</button>
+          </div>
+          <div id="reset-graph-container">
+            <button id="reset-graph">Reset graph</button>
+          </div>
         </div>
-        <div>
-          <label for="i">I</label>
-          <input type="text" id="i" value="0">
-        </div>
-        <div>
-          <label for="d">D</label>
-          <input type="text" id="d" value="0">
-        </div>
-        <div>
-          <label for="set-fan">Fan</label>
-          <input type="text" id="set-fan" value="0">
-        </div>
-        <div>
-          <label for="set-temp">Set temp</label>
-          <input type="text" id="set-temp" value="0">
-        </div>
+        <div id="display-panel"></div>
       </div>
     </div>
-    <div id="display-panel"></div>
   </div>
 
   <div>
@@ -100,40 +132,44 @@ const char index_html[] PROGMEM = R"rawliteral(
   </form>
 </body>
 
-<script src="https://cdn.plot.ly/plotly-2.16.1.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.18.2.min.js"></script>
 
 <script>
 
+  function getInitialData() {
+    return [
+      {
+        y: [],
+        mode: 'lines',
+        name: 'Env',
+      },
+      {
+        y: [],
+        mode: 'lines',
+        name: 'Bean',
+      },
+      {
+        y: [],
+        mode: 'lines',
+        name: 'Set',
+      },
+      {
+        y: [],
+        yaxis: 'y2',
+        mode: 'lines',
+        name: 'Heater',
+      },
+      {
+        y: [],
+        yaxis: 'y2',
+        mode: 'lines',
+        name: 'Fan',
+      },
+    ];
+  }
+
   const displayPanel = document.getElementById("display-panel");
-  let data = [
-    {
-      y: [],
-      mode: 'lines',
-      name: 'Env',
-    },
-    {
-      y: [],
-      mode: 'lines',
-      name: 'Bean',
-    },
-    {
-      y: [],
-      mode: 'lines',
-      name: 'Set',
-    },
-    {
-      y: [],
-      yaxis: 'y2',
-      mode: 'lines',
-      name: 'Heater',
-    },
-    {
-      y: [],
-      yaxis: 'y2',
-      mode: 'lines',
-      name: 'Fan',
-    },
-  ];
+  let data = getInitialData();
   const layout = {
     width: 1000,
     height: 500,
@@ -142,7 +178,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     },
     yaxis: {
       title: 'Temperature, F',
-      range: [50, 600],
+      range: [50, 800],
     },
     yaxis2: {
       title: 'PWM',
@@ -153,38 +189,68 @@ const char index_html[] PROGMEM = R"rawliteral(
   };
 
   Plotly.newPlot(displayPanel, data, layout);
+  resetCsv();
 
   const socket = new WebSocket('ws://roaster.local:80/websocket');
   let seconds = 0;
   let setTemp = 0;
+  let autoscaleX = true;
+
   socket.addEventListener('message', (event) => {
     const response = JSON.parse(event.data);
-    document.getElementById("bt").innerHTML = Math.round(response.data.BT);
-    document.getElementById("et").innerHTML = Math.round(response.data.ET);
-    document.getElementById("at").innerHTML = Math.round(response.data.AT);
+    const beanTemp = Math.round(response.data.BT);
+    const envTemp = Math.round(response.data.ET);
+    const ambientTemp = Math.round(response.data.AT);
+    const heater = Math.round(response.data.HEATER * 100) / 100;
+    const fan = Math.round(response.data.FAN / 255 * 100) / 100;
+
+    document.getElementById("bt").innerHTML = beanTemp;
+    document.getElementById("et").innerHTML = envTemp;
+    document.getElementById("at").innerHTML = ambientTemp;
     document.getElementById("fault").innerHTML = response.data.FAULT;
     document.getElementById("fan").innerHTML = response.data.FAN;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
-      y: [[response.data.ET], [response.data.BT], [setTemp],
-      [response.data.HEATER], [response.data.FAN / 255]],
+      y: [[envTemp], [beanTemp], [setTemp], [heater], [fan]],
     }, [0, 1, 2, 3, 4]);
     document.getElementById("csv").value += seconds + ", " +
-        response.data.ET + ", " + response.data.BT + ", " +
-        setTemp + ", " + response.data.HEATER + ", " + response.data.FAN / 255 + "\n";
+      envTemp + ", " + beanTemp + ", " +
+      setTemp + ", " + heater + ", " +
+      fan + "\n";
 
     seconds++;
-    const range = 300;
-    const min = seconds > range ? (seconds - range) : 0;
-    const max = seconds > range ? seconds : range;
-    const layoutUpdate = {
-      xaxis: {
-        range: [min, max],
-      },
-    };
-    Plotly.relayout(displayPanel, layoutUpdate);
+    if (autoscaleX) {
+      const range = 600;
+      const min = seconds > range ? (seconds - range) : 0;
+      const max = seconds > range ? seconds : range;
+      const layoutUpdate = {
+        xaxis: {
+          range: [min, max],
+        },
+      };
+      Plotly.relayout(displayPanel, layoutUpdate);
+    }
   });
+
+  displayPanel.on('plotly_relayout', (event) => {
+    autoscaleX = false;
+  });
+
+  // See https://plotly.com/javascript/zoom-events/
+  document.getElementById("autoscale").addEventListener("click",
+    (event) => { autoscaleX = true; });
+
+  function resetCsv() {
+    document.getElementById("csv").value = "seconds, env_temp, bean_temp, set_temp, heater, fan\n";
+  }
+
+  function resetGraph() {
+    data = getInitialData();
+    Plotly.react(displayPanel, data, layout);
+    resetCsv();
+  }
+  document.getElementById("reset-graph").addEventListener("click", (event) => { resetGraph(); });
 
   socket.addEventListener('error', (event) => {
     document.getElementById("dashboard").classList.add("error");
