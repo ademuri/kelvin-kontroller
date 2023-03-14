@@ -74,6 +74,10 @@
           <span id="fan"></span>
         </div>
         <div>
+          <label for="heater">Heater:</label>
+          <span id="heater"></span>
+        </div>
+        <div>
           <label for="fault">Fault:</label>
           <span id="fault"></span>
         </div>
@@ -205,6 +209,22 @@
   let ignoreNextRelayout = true;
   let autoscaleX = true;
 
+  // Load tuning constants from local storage
+  const prevP = localStorage.getItem("p");
+  if (prevP !== null) {
+    document.getElementById("p").value = prevP;
+  }
+
+  const prevI = localStorage.getItem("i");
+  if (prevI !== null) {
+    document.getElementById("i").value = prevI;
+  }
+
+  const prevD = localStorage.getItem("d");
+  if (prevD !== null) {
+    document.getElementById("d").value = prevD;
+  }
+
   socket.addEventListener('message', (event) => {
     const response = JSON.parse(event.data);
     const beanTemp = Math.round(response.data.BT);
@@ -221,6 +241,7 @@
     document.getElementById("fatal-fault").classList =
       response.data.FATAL_FAULT === true ? ['fault'] : [];
     document.getElementById("fan").innerHTML = response.data.FAN;
+    document.getElementById("heater").innerHTML = response.data.HEATER;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
@@ -291,15 +312,21 @@
   document.getElementById("reset").addEventListener("click", (event) => { reset(); });
 
   document.getElementById("p").addEventListener("change", (event) => {
-    sendParams({ p: parseFloat(event.target.value) });
+    const p = parseFloat(event.target.value);
+    sendParams({ p: p });
+    localStorage.setItem("p", p);
   });
 
   document.getElementById("i").addEventListener("change", (event) => {
-    sendParams({ i: parseFloat(event.target.value) });
+    const i = parseFloat(event.target.value);
+    sendParams({ i: i });
+    localStorage.setItem("i", i);
   });
 
   document.getElementById("d").addEventListener("change", (event) => {
-    sendParams({ d: parseFloat(event.target.value) });
+    const d = parseFloat(event.target.value);
+    sendParams({ d: d });
+    localStorage.setItem("d", d);
   });
 
   document.getElementById("set-fan").addEventListener("change", (event) => {
