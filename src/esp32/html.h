@@ -79,6 +79,10 @@ const char index_html[] PROGMEM = R"rawliteral(
           <span id="fan"></span>
         </div>
         <div>
+          <label for="heater">Heater:</label>
+          <span id="heater"></span>
+        </div>
+        <div>
           <label for="fault">Fault:</label>
           <span id="fault"></span>
         </div>
@@ -119,6 +123,24 @@ const char index_html[] PROGMEM = R"rawliteral(
           <div>
             <button id="autoscale">Autoscale</button>
           </div>
+
+          <div>
+            <button id="first-crack-start">First crack start</button>
+          </div>
+          <div>
+            <button id="first-crack-end">First crack end</button>
+          </div>
+          <div>
+            <button id="second-crack-start">Second crack start</button>
+          </div>
+          <div>
+            <button id="second-crack-end">Second crack end</button>
+          </div>
+
+          <div>
+            <button id="cooldown">Cooldown</button>
+          </div>
+
           <div id="reset-graph-container">
             <button id="reset-graph">Reset graph</button>
           </div>
@@ -206,13 +228,31 @@ const char index_html[] PROGMEM = R"rawliteral(
   const socket = new WebSocket('ws://roaster.local:80/websocket');
   let seconds = 0;
   let setTemp = 0;
+  let beanTemp = 0;
   // https://marriedtotheseacomics.com/post/103884129802/stop-hitting-yourself-from-married-to-the-sea
   let ignoreNextRelayout = true;
   let autoscaleX = true;
+  let annotationIndex = 0;
+
+  // Load tuning constants from local storage
+  const prevP = localStorage.getItem("p");
+  if (prevP !== null) {
+    document.getElementById("p").value = prevP;
+  }
+
+  const prevI = localStorage.getItem("i");
+  if (prevI !== null) {
+    document.getElementById("i").value = prevI;
+  }
+
+  const prevD = localStorage.getItem("d");
+  if (prevD !== null) {
+    document.getElementById("d").value = prevD;
+  }
 
   socket.addEventListener('message', (event) => {
     const response = JSON.parse(event.data);
-    const beanTemp = Math.round(response.data.BT);
+    beanTemp = Math.round(response.data.BT);
     const envTemp = Math.round(response.data.ET);
     const ambientTemp = Math.round(response.data.AT);
     const heater = Math.round(response.data.HEATER * 100) / 100;
@@ -226,6 +266,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     document.getElementById("fatal-fault").classList =
       response.data.FATAL_FAULT === true ? ['fault'] : [];
     document.getElementById("fan").innerHTML = response.data.FAN;
+    document.getElementById("heater").innerHTML = response.data.HEATER;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
@@ -276,6 +317,35 @@ const char index_html[] PROGMEM = R"rawliteral(
   }
   document.getElementById("reset-graph").addEventListener("click", (event) => { resetGraph(); });
 
+  function addAnnotation(text) {
+    // This API is sort-of documented here: https://plotly.com/javascript/text-and-annotations/#styling-and-formatting-annotations
+    const annotation = {
+      x: seconds,
+      y: beanTemp,
+      text: text,
+    };
+    Plotly.relayout(displayPanel, `annotations[${annotationIndex++}]`, annotation);
+  }
+  document.getElementById("first-crack-start").addEventListener("click", (event) => {
+    addAnnotation(`First crack start (${beanTemp}F)`);
+  });
+  document.getElementById("first-crack-end").addEventListener("click", (event) => {
+    addAnnotation(`First crack end (${beanTemp}F)`);
+  });
+  document.getElementById("second-crack-start").addEventListener("click", (event) => {
+    addAnnotation(`Second crack start (${beanTemp}F)`);
+  });
+  document.getElementById("second-crack-end").addEventListener("click", (event) => {
+    addAnnotation(`Second crack end (${beanTemp}F)`);
+  });
+
+  document.getElementById("cooldown").addEventListener("click", (event) => {
+    document.getElementById("set-fan").value = 255;
+    document.getElementById("set-temp").value = 0;
+    sendParams({ fan: 255, temp: 0 });
+    addAnnotation(`Cooldown (${beanTemp}F)`);
+  });
+
   socket.addEventListener('error', (event) => {
     document.getElementById("dashboard").classList.add("error");
   });
@@ -296,15 +366,21 @@ const char index_html[] PROGMEM = R"rawliteral(
   document.getElementById("reset").addEventListener("click", (event) => { reset(); });
 
   document.getElementById("p").addEventListener("change", (event) => {
-    sendParams({ p: parseFloat(event.target.value) });
+    const p = parseFloat(event.target.value);
+    sendParams({ p: p });
+    localStorage.setItem("p", p);
   });
 
   document.getElementById("i").addEventListener("change", (event) => {
-    sendParams({ i: parseFloat(event.target.value) });
+    const i = parseFloat(event.target.value);
+    sendParams({ i: i });
+    localStorage.setItem("i", i);
   });
 
   document.getElementById("d").addEventListener("change", (event) => {
-    sendParams({ d: parseFloat(event.target.value) });
+    const d = parseFloat(event.target.value);
+    sendParams({ d: d });
+    localStorage.setItem("d", d);
   });
 
   document.getElementById("set-fan").addEventListener("change", (event) => {
