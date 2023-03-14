@@ -312,6 +312,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
   function resetGraph() {
     data = getInitialData();
+    seconds = 0;
     Plotly.react(displayPanel, data, layout);
     resetCsv();
   }
