@@ -27,7 +27,10 @@ constexpr char kReset[] = "reset";
 constexpr char kP[] = "p";
 constexpr char kI[] = "i";
 constexpr char kD[] = "d";
-constexpr char kTime[] = "reset";
+constexpr char kTime[] = "time";
+
+constexpr bool kDebugWebsockets = false;
+constexpr bool kDebugCurve = false;
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
@@ -116,7 +119,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   if (info->final && info->index == 0 && info->len == len &&
       info->opcode == WS_TEXT) {
     data[len] = 0;
-    Serial.printf("WebSocket message received: %s\n", data);
+    if (kDebugWebsockets) {
+      Serial.printf("WebSocket message received: %s\n", data);
+    }
     DeserializationError err = deserializeJson(request_message, data);
     if (err) {
       Serial.printf("WebSocket error while deserializing json: %s\n",
@@ -162,7 +167,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         command.fan_speed = params[kFan];
       }
       if (params.containsKey(kReset)) {
-        Serial.println("Resetting fault");
+        if (kDebugWebsockets) {
+          Serial.println("Resetting fault");
+        }
         command.reset = true;
       }
       if (params.containsKey(kP)) {
@@ -175,15 +182,20 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         command.d = params[kD];
       }
     } else if (strcmp(request_message["command"], "runCurve") == 0) {
-      const JsonObject curve = request_message["curve"];
-      curve_index = 0;
+      JsonArrayConst curve = request_message["curve"];
       current_curve.clear();
 
       for (uint8_t i = 0; i < curve.size(); i++) {
-        if (!(curve.containsKey(kTime) && curve.containsKey(kTemp) && curve.containsKey(kFan))) {
+        if (!(curve[i].containsKey(kTime) && curve[i].containsKey(kTemp) &&
+              curve[i].containsKey(kFan))) {
+          Serial.print("Missing key from curve point: ");
+          serializeJson(curve[i], Serial);
+          Serial.println();
           current_curve.clear();
+          return;
         }
-        current_curve.push_back(CurvePoint{curve[kTime], curve[kTemp], curve[kFan]});
+        current_curve.push_back(
+            CurvePoint{curve[i][kTime], curve[i][kTemp], curve[i][kFan]});
       }
 
       if (current_curve.empty()) {
@@ -191,7 +203,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       }
 
       curve_started_at_ms = millis();
-      next_curve_point_at_ms = curve_started_at_ms + current_curve[0].time * 1000;
+      next_curve_point_at_ms = 0;
+      curve_index = -1;
     }
   }
 }
@@ -356,15 +369,25 @@ void loop() {
     if (millis() > next_curve_point_at_ms) {
       curve_index++;
       if (curve_index < current_curve.size()) {
-        next_curve_point_at_ms = current_curve[curve_index].time * 1000;
+        next_curve_point_at_ms =
+            millis() + current_curve[curve_index].time * 1000;
+        if (kDebugCurve) {
+          Serial.printf("Setting curve: time: %u, temp: %u, fan: %u\n",
+                        current_curve[curve_index].time,
+                        current_curve[curve_index].temp,
+                        current_curve[curve_index].fan);
+        }
+
+        command.target_temp = current_curve[curve_index].temp;
+        command.fan_speed = current_curve[curve_index].fan;
       } else {
+        if (kDebugCurve) {
+          Serial.println("End of curve.");
+        }
         current_curve.clear();
         command.target_temp = 0;
         command.fan_speed = 255;
       }
     }
-
-    command.target_temp = current_curve[curve_index].temp;
-    command.fan_speed = current_curve[curve_index].fan;
   }
 }
