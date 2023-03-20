@@ -227,6 +227,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         next_curve_point_at_ms += (millis() - curve_paused_at);
         curve_paused_at = 0;
       }
+    } else if (strcmp(request_message["command"], "curveNext") == 0) {
+      if (current_curve.empty()) {
+        if (kDebugCurve) {
+          Serial.println("Warning: asked to curveNext while in MANUAL mode");
+          return;
+        }
+      }
+      next_curve_point_at_ms = 0;
     }
   }
 }
@@ -388,7 +396,8 @@ void loop() {
   }
 
   if (!current_curve.empty()) {
-    if (curve_paused_at == 0 && millis() > next_curve_point_at_ms) {
+    if ((curve_paused_at == 0 && millis() > next_curve_point_at_ms) ||
+        next_curve_point_at_ms == 0) {
       curve_index++;
       if (curve_index < current_curve.size()) {
         next_curve_point_at_ms =

@@ -130,6 +130,9 @@
             <span id="step-time"></span>
           </div>
           <div>
+            <button id="curve-next">Next curve point</button>
+          </div>
+          <div>
             <button id="toggle-curve">Pause curve</button>
           </div>
           <div>
@@ -315,6 +318,7 @@
     document.getElementById("toggle-curve").innerHTML =
       (mode === "PAUSED") ? "Resume curve" : "Pause curve";
     document.getElementById("toggle-curve").disabled = (mode === "MANUAL");
+    document.getElementById("curve-next").disabled = (mode === "MANUAL");
 
     document.getElementById("bt").innerHTML = beanTemp;
     document.getElementById("et").innerHTML = envTemp;
@@ -518,8 +522,12 @@
   document.getElementById("current-curve").value =
     localStorage.getItem("current-curve");
 
-  const toggleCurveButton = document.getElementById("toggle-curve");
-  toggleCurveButton.addEventListener("click", (event) => {
+  document.getElementById("curve-next").addEventListener("click", (event) => {
+    const obj = { "command": "curveNext" };
+    socket.send(JSON.stringify(obj));
+  });
+
+  document.getElementById("toggle-curve").addEventListener("click", (event) => {
     const obj = { "command": "pauseCurve" };
     socket.send(JSON.stringify(obj));
   });
