@@ -373,6 +373,8 @@ void setup() {
   oled.setTextColor(SH110X_WHITE);
   oled.setTextSize(2);
   Serial.println(" done.");
+
+  command.reset = true;
 }
 
 void loop() {
