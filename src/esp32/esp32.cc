@@ -27,6 +27,7 @@ constexpr char kReset[] = "reset";
 constexpr char kP[] = "p";
 constexpr char kI[] = "i";
 constexpr char kD[] = "d";
+constexpr char kTime[] = "reset";
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
@@ -36,6 +37,12 @@ RunnerStatus status;
 EasyTransfer<RunnerStatus> transfer_in{&status};
 EasyTransfer<RunnerCommand> transfer_out{&command};
 uint32_t received_at = 0;
+
+// Curves
+std::vector<CurvePoint> current_curve;
+uint8_t curve_index = 0;
+uint32_t curve_started_at_ms = 0;
+uint32_t next_curve_point_at_ms = 0;
 
 constexpr uint8_t kScreenWidth = 64;
 constexpr uint8_t kScreenHeight = 128;
@@ -129,6 +136,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["HEATER"] = status.heater_output;
       data["FAULT"] = faultToDebugString(status.fault_since_reset);
       data["FATAL_FAULT"] = status.fatal_fault;
+      data["MODE"] = current_curve.empty() ? "MANUAL" : "CURVE";
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
@@ -166,6 +174,24 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       if (params.containsKey(kD)) {
         command.d = params[kD];
       }
+    } else if (strcmp(request_message["command"], "runCurve") == 0) {
+      const JsonObject curve = request_message["curve"];
+      curve_index = 0;
+      current_curve.clear();
+
+      for (uint8_t i = 0; i < curve.size(); i++) {
+        if (!(curve.containsKey(kTime) && curve.containsKey(kTemp) && curve.containsKey(kFan))) {
+          current_curve.clear();
+        }
+        current_curve.push_back(CurvePoint{curve[kTime], curve[kTemp], curve[kFan]});
+      }
+
+      if (current_curve.empty()) {
+        return;
+      }
+
+      curve_started_at_ms = millis();
+      next_curve_point_at_ms = curve_started_at_ms + current_curve[0].time * 1000;
     }
   }
 }
@@ -324,5 +350,21 @@ void loop() {
     oled.printf(" ENV: %3.0fF\n", status.env_temp);
     oled.printf("%s", faultToBinaryString(status.fault_since_reset));
     oled.display();
+  }
+
+  if (!current_curve.empty()) {
+    if (millis() > next_curve_point_at_ms) {
+      curve_index++;
+      if (curve_index < current_curve.size()) {
+        next_curve_point_at_ms = current_curve[curve_index].time * 1000;
+      } else {
+        current_curve.clear();
+        command.target_temp = 0;
+        command.fan_speed = 255;
+      }
+    }
+
+    command.target_temp = current_curve[curve_index].temp;
+    command.fan_speed = current_curve[curve_index].fan;
   }
 }

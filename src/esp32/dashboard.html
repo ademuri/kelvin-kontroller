@@ -417,6 +417,7 @@
     let curve = [];
 
     let error = false;
+    let prevFan = 255;
     curveElement.value.split("\n").forEach((line) => {
       let point = {};
       const tokens = line.split(",");
@@ -446,6 +447,9 @@
           error = true;
           return;
         }
+        prevFan = point['fan'];
+      } else {
+        point['fan'] = prevFan;
       }
 
       curve.push(point);
@@ -454,6 +458,10 @@
     if (error) {
       return;
     }
+
+    resetGraph();
+    const obj = { "command": "runCurve", "curve": curve };
+    socket.send(JSON.stringify(obj));
   });
   document.getElementById("current-curve").value = 
     localStorage.getItem("current-curve");

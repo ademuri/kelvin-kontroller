@@ -61,5 +61,14 @@ struct RunnerCommand {
   float d = -1;
 };
 
+struct CurvePoint {
+  CurvePoint(uint32_t time, uint8_t temp, uint8_t fan)
+      : time(time), temp(temp), fan(fan) {}
+
+  uint32_t time = 0;
+  uint8_t temp = 0;
+  uint8_t fan = 0;
+};
+
 // The serial rate for the UART between the ESP32 and STM32
 constexpr int kSerialBaud = 115200;
