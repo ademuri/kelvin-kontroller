@@ -14,6 +14,11 @@
       font-style: italic;
     }
 
+    div.dashboard-split {
+      width: 50%;
+      float: left;
+    }
+
     .error {
       background-color: red;
     }
@@ -26,6 +31,11 @@
     input[type="text"] {
       width: 3em;
       font-size: 0.7rem;
+    }
+
+    #dashboard {
+      float: left;
+      width: 100%;
     }
 
     #tune {
@@ -71,39 +81,54 @@
   <div id="container">
     <div id="control-panel">
       <div id="dashboard">
-        <div>
-          <label for="bt">Bean temp:</label>
-          <span id="bt"></span>
+        <div class="dashboard-split">
+          <div>
+            <label for="bt">Bean temp:</label>
+            <span id="bt"></span>
+          </div>
+          <div>
+            <label for="et">Env temp:</label>
+            <span id="et"></span>
+          </div>
+          <div>
+            <label for="at">Ambient temp:</label>
+            <span id="at"></span>
+          </div>
+          <div>
+            <label for="fan">Fan speed:</label>
+            <span id="fan"></span>
+          </div>
+          <div>
+            <label for="heater">Heater:</label>
+            <span id="heater"></span>
+          </div>
+          <div>
+            <label for="fault">Fault:</label>
+            <span id="fault"></span>
+          </div>
+          <div>
+            <label for="fatal-fault">Running: </label>
+            <span id="fatal-fault"></span>
+          </div>
+          <div>
+            <label for="updated">Updated:</label>
+            <span id="updated"></span>
+          </div>
+          <button id="reset">Reset controller</button>
         </div>
-        <div>
-          <label for="et">Env temp:</label>
-          <span id="et"></span>
+        <div class="dashboard-split">
+          <div>
+            <label for="mode">Mode: </label>
+            <span id="mode"></span>
+          </div>
+          <div>
+            <label for="roast-time">Roast time: </label>
+            <span id="roast-time"></span>
+          </div>
+          <div>
+            <button id="stop-curve">Stop curve</button>
+          </div>
         </div>
-        <div>
-          <label for="at">Ambient temp:</label>
-          <span id="at"></span>
-        </div>
-        <div>
-          <label for="fan">Fan speed:</label>
-          <span id="fan"></span>
-        </div>
-        <div>
-          <label for="heater">Heater:</label>
-          <span id="heater"></span>
-        </div>
-        <div>
-          <label for="fault">Fault:</label>
-          <span id="fault"></span>
-        </div>
-        <div>
-          <label for="fatal-fault">Running: </label>
-          <span id="fatal-fault"></span>
-        </div>
-        <div>
-          <label for="updated">Updated:</label>
-          <span id="updated"></span>
-        </div>
-        <button id="reset">Reset controller</button>
       </div>
       <br />
 
@@ -148,6 +173,9 @@
 
           <div>
             <button id="cooldown">Cooldown</button>
+          </div>
+          <div>
+            <button id="stop">Stop</button>
           </div>
 
           <div id="reset-graph-container">
@@ -274,20 +302,24 @@
     const ambientTemp = Math.round(response.data.AT);
     const heater = Math.round(response.data.HEATER * 100) / 100;
     const fan = Math.round(response.data.FAN / 255 * 100) / 100;
+    setTemp = response.data.SET;
 
     document.getElementById("bt").innerHTML = beanTemp;
     document.getElementById("et").innerHTML = envTemp;
     document.getElementById("at").innerHTML = ambientTemp;
+    document.getElementById("set-temp").value = setTemp;
     document.getElementById("fault").innerHTML = response.data.FAULT;
     document.getElementById("fatal-fault").innerHTML = !response.data.FATAL_FAULT;
     document.getElementById("fatal-fault").classList =
       response.data.FATAL_FAULT === true ? ['fault'] : [];
     document.getElementById("fan").innerHTML = response.data.FAN;
     document.getElementById("heater").innerHTML = response.data.HEATER;
+    document.getElementById("mode").innerHTML = response.data.MODE;
+    document.getElementById("roast-time").innerHTML = response.data.TIME;
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
-      y: [[envTemp], [beanTemp], [setTemp], [heater], [fan]],
+      y: [[envTemp], [beanTemp], [parseFloat(setTemp)], [heater], [fan]],
     }, [0, 1, 2, 3, 4]);
     document.getElementById("csv").value += seconds + ", " +
       envTemp + ", " + beanTemp + ", " +
@@ -362,6 +394,12 @@
     document.getElementById("set-temp").value = 0;
     sendParams({ fan: 255, temp: 0 });
     addAnnotation(`Cooldown (${beanTemp}F)`);
+  });
+
+  document.getElementById("stop").addEventListener("click", (event) => {
+    document.getElementById("set-fan").value = 0;
+    document.getElementById("set-temp").value = 0;
+    sendParams({ fan: 0, temp: 0 });
   });
 
   socket.addEventListener('error', (event) => {
@@ -463,8 +501,14 @@
     const obj = { "command": "runCurve", "curve": curve };
     socket.send(JSON.stringify(obj));
   });
-  document.getElementById("current-curve").value = 
+  document.getElementById("current-curve").value =
     localStorage.getItem("current-curve");
+
+  document.getElementById("stop-curve").addEventListener("click", (event) => {
+    const obj = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(obj));
+    sendParams({ fan: 255, temp: 0 });
+  });
 
   setInterval(getData, 1000);
 

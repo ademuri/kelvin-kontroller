@@ -137,11 +137,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["BT"] = status.bean_temp;
       data["ET"] = status.env_temp;
       data["AT"] = status.ambient_temp;
+      data["SET"] = command.target_temp;
       data["FAN"] = status.fan_speed;
       data["HEATER"] = status.heater_output;
       data["FAULT"] = faultToDebugString(status.fault_since_reset);
       data["FATAL_FAULT"] = status.fatal_fault;
       data["MODE"] = current_curve.empty() ? "MANUAL" : "CURVE";
+      data["TIME"] =
+          current_curve.empty() ? 0 : (millis() - curve_started_at_ms) / 1000;
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
