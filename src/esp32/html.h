@@ -54,6 +54,20 @@ const char index_html[] PROGMEM = R"rawliteral(
     #fatal-fault.fault {
       background-color: red;
     }
+
+    #current-curve {
+      height: 8em;
+      width: 20em;
+    }
+
+    #curves label {
+      display: block;
+    }
+
+    #curve-key {
+      font-size: 0.5em;
+      font-style: italic;
+    }
   </style>
 </head>
 
@@ -153,8 +167,16 @@ const char index_html[] PROGMEM = R"rawliteral(
   <div>
     <textarea id="csv"></textarea>
   </div>
-
   <br />
+
+  <div id="curves">
+    <label for="current-curve">Curve</label>
+    <div id="curve-key">Time, Temp, Fan=(prev or 255)</div>
+    <textarea id="current-curve"></textarea>
+    <button id="run-curve">Run curve</button>
+  </div>
+  <br />
+
   <form method="post" enctype="multipart/form-data" style="visibility: hidden;">
     <div>
       <div id="tester"></div><label for="file">Firmware for STM32G030C8T6</label>
@@ -392,6 +414,57 @@ const char index_html[] PROGMEM = R"rawliteral(
     setTemp = parseFloat(event.target.value);
     sendParams({ temp: setTemp });
   });
+
+  document.getElementById("run-curve").addEventListener("click", (event) => {
+    const curveElement = document.getElementById("current-curve");
+    localStorage.setItem("current-curve", curveElement.value);
+    curveElement.classList = [];
+    let curve = [];
+
+    let error = false;
+    curveElement.value.split("\n").forEach((line) => {
+      let point = {};
+      const tokens = line.split(",");
+      if (tokens.length < 2 || tokens.length > 3) {
+        curveElement.classList = ["error"];
+        error = true
+        // forEach return early
+        return;
+      }
+
+      point['time'] = parseInt(tokens[0]);
+      if (point['time'] == NaN) {
+        curveElement.classList = ["error"];
+        error = true;
+        return;
+      }
+      point['temp'] = parseInt(tokens[1]);
+      if (point['temp'] == NaN) {
+        curveElement.classList = ["error"];
+        error = true;
+        return;
+      }
+      if (tokens.length == 3) {
+        point['fan'] = parseInt(tokens[2]);
+        if (point['fan'] == NaN) {
+          curveElement.classList = ["error"];
+          error = true;
+          return;
+        }
+      }
+
+      curve.push(point);
+    });
+
+    if (error) {
+      return;
+    }
+
+    const obj = { "command": "runCurve", "curve": curve };
+    socket.send(JSON.stringify(obj));
+  });
+  document.getElementById("current-curve").value = 
+    localStorage.getItem("current-curve");
 
   setInterval(getData, 1000);
 
