@@ -126,6 +126,13 @@
             <span id="roast-time"></span>
           </div>
           <div>
+            <label for="step-time">Curve step time remaining: </label>
+            <span id="step-time"></span>
+          </div>
+          <div>
+            <button id="toggle-curve">Pause curve</button>
+          </div>
+          <div>
             <button id="stop-curve">Stop curve</button>
           </div>
         </div>
@@ -278,6 +285,7 @@
   let ignoreNextRelayout = true;
   let autoscaleX = true;
   let annotationIndex = 0;
+  let mode = "MANUAL";
 
   // Load tuning constants from local storage
   const prevP = localStorage.getItem("p");
@@ -303,6 +311,10 @@
     const heater = Math.round(response.data.HEATER * 100) / 100;
     const fan = Math.round(response.data.FAN / 255 * 100) / 100;
     setTemp = response.data.SET;
+    mode = response.data.MODE;
+    document.getElementById("toggle-curve").innerHTML =
+      (mode === "PAUSED") ? "Resume curve" : "Pause curve";
+    document.getElementById("toggle-curve").disabled = (mode === "MANUAL");
 
     document.getElementById("bt").innerHTML = beanTemp;
     document.getElementById("et").innerHTML = envTemp;
@@ -314,8 +326,10 @@
       response.data.FATAL_FAULT === true ? ['fault'] : [];
     document.getElementById("fan").innerHTML = response.data.FAN;
     document.getElementById("heater").innerHTML = response.data.HEATER;
-    document.getElementById("mode").innerHTML = response.data.MODE;
+    document.getElementById("mode").innerHTML = mode;
     document.getElementById("roast-time").innerHTML = response.data.TIME;
+    document.getElementById("step-time").innerHTML
+      = (mode === "CURVE") ? response.data.STEP_TIME : "-";
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
@@ -503,6 +517,12 @@
   });
   document.getElementById("current-curve").value =
     localStorage.getItem("current-curve");
+
+  const toggleCurveButton = document.getElementById("toggle-curve");
+  toggleCurveButton.addEventListener("click", (event) => {
+    const obj = { "command": "pauseCurve" };
+    socket.send(JSON.stringify(obj));
+  });
 
   document.getElementById("stop-curve").addEventListener("click", (event) => {
     const obj = { "command": "runCurve", "curve": {} };

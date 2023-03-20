@@ -46,6 +46,7 @@ std::vector<CurvePoint> current_curve;
 uint8_t curve_index = 0;
 uint32_t curve_started_at_ms = 0;
 uint32_t next_curve_point_at_ms = 0;
+uint32_t curve_paused_at = 0;
 
 constexpr uint8_t kScreenWidth = 64;
 constexpr uint8_t kScreenHeight = 128;
@@ -142,9 +143,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       data["HEATER"] = status.heater_output;
       data["FAULT"] = faultToDebugString(status.fault_since_reset);
       data["FATAL_FAULT"] = status.fatal_fault;
-      data["MODE"] = current_curve.empty() ? "MANUAL" : "CURVE";
+      data["MODE"] = current_curve.empty()
+                         ? "MANUAL"
+                         : (curve_paused_at == 0 ? "CURVE" : "PAUSED");
       data["TIME"] =
           current_curve.empty() ? 0 : (millis() - curve_started_at_ms) / 1000;
+      data["STEP_TIME"] = (next_curve_point_at_ms - millis()) / 1000;
       data["UPDATED"] = millis() - received_at;
 
       // Note: can use websocket.makeBuffer(len) if this is slow:
@@ -208,6 +212,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       curve_started_at_ms = millis();
       next_curve_point_at_ms = 0;
       curve_index = -1;
+      curve_paused_at = 0;
+    } else if (strcmp(request_message["command"], "pauseCurve") == 0) {
+      if (current_curve.empty()) {
+        if (kDebugCurve) {
+          Serial.println("Warning: asked to pause while in MANUAL mode");
+          return;
+        }
+      }
+      if (curve_paused_at == 0) {
+        // Not currently paused
+        curve_paused_at = millis();
+      } else {
+        next_curve_point_at_ms += (millis() - curve_paused_at);
+        curve_paused_at = 0;
+      }
     }
   }
 }
@@ -369,7 +388,7 @@ void loop() {
   }
 
   if (!current_curve.empty()) {
-    if (millis() > next_curve_point_at_ms) {
+    if (curve_paused_at == 0 && millis() > next_curve_point_at_ms) {
       curve_index++;
       if (curve_index < current_curve.size()) {
         next_curve_point_at_ms =
