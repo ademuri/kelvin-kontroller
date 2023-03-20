@@ -255,6 +255,7 @@ void setup() {
               received_size);
         }
       });
+  ArduinoOTA.setHostname("roaster");
   ArduinoOTA
       .onStart([]() {
         String type;
