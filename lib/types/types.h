@@ -62,11 +62,11 @@ struct RunnerCommand {
 };
 
 struct CurvePoint {
-  CurvePoint(uint32_t time, uint8_t temp, uint8_t fan)
+  CurvePoint(uint32_t time, float temp, uint8_t fan)
       : time(time), temp(temp), fan(fan) {}
 
   uint32_t time = 0;
-  uint8_t temp = 0;
+  float temp = 0;
   uint8_t fan = 0;
 };
 
