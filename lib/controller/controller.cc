@@ -79,7 +79,7 @@ void Controller::Step() {
     return;
   }
 
-  temp_pid.run(bean_temp);
+  temp_pid.run(env_temp);
   if (fan_target_ > 0 && fan_value_ > 0) {
     status_.heater_output = temp_pid.getOutput();
     SetHeater(temp_pid.getRelayState());
@@ -102,11 +102,17 @@ void Controller::Step() {
 }
 
 void Controller::ReceiveCommand(const RunnerCommand &command) {
-  set_temp_ = command.target_temp;
-  temp_pid.setSetPoint(command.target_temp);
+  if (command.heater_duty != 0) {
+    set_temp_ = 0;
+  } else {
+    set_temp_ = command.target_temp;
+    temp_pid.setSetPoint(command.target_temp);
+  }
+
   SetFanTarget(command.fan_speed);
   if (command.reset == true) {
     ResetStatus();
+    fault_filter_
   }
   if (command.p >= 0) {
     p = command.p;
