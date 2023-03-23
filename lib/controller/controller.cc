@@ -64,16 +64,12 @@ void Controller::Step() {
 
   if (fault_filter_.GetFilteredValue() != 0 || status_.fatal_fault) {
     status_.fatal_fault = true;
-    if (relay_value_ == 1) {
-      // When a fault occurs, fail safe: disable the heater, turn the fan to
-      // maximum, and enable the stir.
-      SetFan(255);
-      SetHeater(false);
-      SetStir(true);
-      SetRelay(false);
-
-      // TODO: turn on the buzzer
-    }
+    // When a fault occurs, fail safe: disable the heater, turn the fan to
+    // maximum, and enable the stir.
+    SetFan(255);
+    SetHeater(false);
+    SetStir(true);
+    SetRelay(false);
 
     // If a fault has already occurred, just read the temps and do nothing else.
     return;
