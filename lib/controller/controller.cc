@@ -102,17 +102,12 @@ void Controller::Step() {
 }
 
 void Controller::ReceiveCommand(const RunnerCommand &command) {
-  if (command.heater_duty != 0) {
-    set_temp_ = 0;
-  } else {
-    set_temp_ = command.target_temp;
-    temp_pid.setSetPoint(command.target_temp);
-  }
+  set_temp_ = command.target_temp;
+  temp_pid.setSetPoint(command.target_temp);
 
   SetFanTarget(command.fan_speed);
   if (command.reset == true) {
     ResetStatus();
-    fault_filter_
   }
   if (command.p >= 0) {
     p = command.p;
