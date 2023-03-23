@@ -217,7 +217,7 @@ TEST(Controller, CommandSetsPidTemp) {
   EXPECT_EQ(controller.GetHeaterValue(), true);
 
   AdvanceMillis(100);
-  controller.SetBeanTempF(500);
+  controller.SetEnvTempF(500);
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
