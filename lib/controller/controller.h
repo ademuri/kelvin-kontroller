@@ -8,6 +8,8 @@
 #include <arduino-timer.h>
 #include <median-filter.h>
 
+#include "ramper.h"
+
 class Controller {
  protected:
   RunnerStatus status_{};
@@ -36,7 +38,7 @@ class Controller {
   virtual void SetStir(bool on);
 
   // Returns the current actual setpoint for the heater
-  uint8_t GetFanValue() const { return fan_value_; }
+  uint8_t GetFanValue() const { return fan_ramper_.Get(); }
 
   // Returns the current actual setpoint for the heater
   bool GetHeaterValue() const { return heater_value_; }
@@ -63,8 +65,6 @@ class Controller {
  protected:
   virtual void SetRelay(bool on);
 
-  uint8_t fan_target_ = 0;
-  uint8_t fan_value_ = 0;
   bool heater_value_ = 0;
   bool stir_value_ = 0;
   float set_temp_ = 0;
@@ -75,6 +75,9 @@ class Controller {
   uint8_t fan_max_ = 255;
 
  private:
+  uint8_t fan_target_ = 0;
+  Ramper fan_ramper_{/*period=*/5, /*max_change=*/10};
+
   // Period for the SSR PWM output. Should be an even multiple of half-cycles.
   // The SSR is zero-cross output, so for 60Hz mains, there are 120 half-cycles
   // per second. A longer period means more granularity in controlling the heat,

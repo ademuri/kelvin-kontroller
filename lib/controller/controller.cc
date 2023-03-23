@@ -58,6 +58,7 @@ void Controller::Step() {
   status_.bean_temp = bean_temp;
   status_.env_temp = env_temp;
   status_.ambient_temp = ambient_temp;
+  fan_ramper_.Step();
   status_.fan_speed = GetFanValue();
 
   fault_filter_.Run();
@@ -76,7 +77,7 @@ void Controller::Step() {
   }
 
   temp_pid.run(env_temp);
-  if (fan_target_ > 0 && fan_value_ > 0) {
+  if (fan_target_ > 0 && fan_ramper_.Get() > 0) {
     status_.heater_output = temp_pid.getOutput();
     SetHeater(temp_pid.getRelayState());
   } else {
@@ -123,16 +124,18 @@ void Controller::SetFanTarget(uint8_t pwm) {
 }
 
 void Controller::SetFan(uint8_t pwm) {
+  uint8_t wanted_fan_value;
   if (pwm > 0) {
-    fan_value_ = std::min(fan_max_, pwm);
-    fan_value_ = std::max(fan_min_, pwm);
+    wanted_fan_value = std::min(fan_max_, pwm);
+    wanted_fan_value = std::max(fan_min_, pwm);
     if (!fan_timer_.Running()) {
       fan_timer_.Reset();
     }
   } else {
-    fan_value_ = 0;
+    wanted_fan_value = 0;
     fan_timer_.Stop();
   }
+  fan_ramper_.SetTarget(wanted_fan_value);
 }
 
 void Controller::SetHeater(bool on) {

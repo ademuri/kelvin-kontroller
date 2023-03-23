@@ -60,7 +60,7 @@ void ArduinoController::Step() {
 
 void ArduinoController::SetFan(uint8_t pwm) {
   Controller::SetFan(pwm);
-  analogWrite(kFanEn, fan_value_);
+  analogWrite(kFanEn, GetFanValue());
 }
 
 void ArduinoController::SetHeater(bool on) {
