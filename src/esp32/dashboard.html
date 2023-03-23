@@ -382,6 +382,7 @@
   function resetGraph() {
     data = getInitialData();
     seconds = 0;
+    layout.annotations = [];
     Plotly.react(displayPanel, data, layout);
     resetCsv();
   }
