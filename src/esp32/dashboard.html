@@ -95,10 +95,6 @@
             <span id="at"></span>
           </div>
           <div>
-            <label for="fan">Fan speed:</label>
-            <span id="fan"></span>
-          </div>
-          <div>
             <label for="heater">Heater:</label>
             <span id="heater"></span>
           </div>
@@ -267,7 +263,7 @@
     },
     yaxis: {
       title: 'Temperature, F',
-      range: [50, 800],
+      range: [50, 600],
     },
     yaxis2: {
       title: 'PWM',
@@ -279,6 +275,8 @@
 
   Plotly.newPlot(displayPanel, data, layout);
   resetCsv();
+
+  const maxDisplayTemp = 600;
 
   const socket = new WebSocket('ws://roaster.local:80/websocket');
   let seconds = 0;
@@ -308,8 +306,8 @@
 
   socket.addEventListener('message', (event) => {
     const response = JSON.parse(event.data);
-    beanTemp = Math.round(response.data.BT);
-    const envTemp = Math.round(response.data.ET);
+    beanTemp = Math.round(Math.min(response.data.BT, maxDisplayTemp));
+    const envTemp = Math.round(Math.min(response.data.ET, maxDisplayTemp));
     const ambientTemp = Math.round(response.data.AT);
     const heater = Math.round(response.data.HEATER * 100) / 100;
     const fan = Math.round(response.data.FAN / 255 * 100) / 100;
@@ -323,15 +321,16 @@
     document.getElementById("bt").innerHTML = beanTemp;
     document.getElementById("et").innerHTML = envTemp;
     document.getElementById("at").innerHTML = ambientTemp;
-    if (document.getElementById("set-temp") !== document.activeElement) {
+    if (document.activeElement.id !== "set-temp") {
       document.getElementById("set-temp").value = setTemp;
     }
     document.getElementById("fault").innerHTML = response.data.FAULT;
     document.getElementById("fatal-fault").innerHTML = !response.data.FATAL_FAULT;
     document.getElementById("fatal-fault").classList =
       response.data.FATAL_FAULT === true ? ['fault'] : [];
-    document.getElementById("fan").innerHTML = response.data.FAN;
-    document.getElementById("heater").innerHTML = response.data.HEATER;
+    if (document.activeElement.id !== "set-fan") {
+      document.getElementById("set-fan").value = response.data.FAN;
+    }
     document.getElementById("mode").innerHTML = mode;
     document.getElementById("roast-time").innerHTML = response.data.TIME;
     document.getElementById("step-time").innerHTML
