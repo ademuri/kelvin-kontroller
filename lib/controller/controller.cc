@@ -126,12 +126,22 @@ void Controller::SetFan(uint8_t pwm) {
   if (pwm > 0) {
     fan_value_ = std::min(fan_max_, pwm);
     fan_value_ = std::max(fan_min_, pwm);
+    if (!fan_timer_.Running()) {
+      fan_timer_.Reset();
+    }
   } else {
     fan_value_ = 0;
+    fan_timer_.Stop();
   }
 }
 
-void Controller::SetHeater(bool on) { heater_value_ = on; }
+void Controller::SetHeater(bool on) {
+  if (fan_timer_.Get() > kFanToHeaterOnDelay) {
+    heater_value_ = on;
+  } else {
+    heater_value_ = false;
+  }
+}
 
 void Controller::SetStir(bool on) { stir_value_ = on; }
 

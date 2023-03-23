@@ -214,6 +214,8 @@ TEST(Controller, CommandSetsPidTemp) {
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
+  AdvanceMillis(10000);
+  controller.Step();
   EXPECT_EQ(controller.GetHeaterValue(), true);
 
   AdvanceMillis(100);
@@ -247,9 +249,13 @@ TEST(Controller, OnlySetsHeaterIfFanIsOn) {
   AdvanceMillis(100);
   controller.SetFanTarget(255);
   controller.Step();
-  EXPECT_EQ(controller.GetHeaterValue(), true);
+  EXPECT_EQ(controller.GetHeaterValue(), false);
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
+
+  AdvanceMillis(10000);
+  controller.Step();
+  EXPECT_EQ(controller.GetHeaterValue(), true);
 }
 
 TEST(Controller, RunsFanWhileBeansStillHot) {

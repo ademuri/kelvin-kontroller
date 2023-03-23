@@ -71,7 +71,7 @@ class Controller {
 
   bool relay_value_ = 1;
 
-  uint8_t fan_min_ = 20;
+  uint8_t fan_min_ = 50;
   uint8_t fan_max_ = 255;
 
  private:
@@ -95,6 +95,8 @@ class Controller {
   float d = 0;
   AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
 
+  CountUpTimer fan_timer_;
+
   // Safety constants
   // If the ambient is below this, ambient sensing is probably broken
   static constexpr float kMinAmbientTemp = 30;
@@ -115,11 +117,15 @@ class Controller {
   // If the beans are above this temp, fan should be on
   static constexpr float kBeanFanTemp = 180;
 
-  // If the heater are above this temp, fan should be on
+  // If the heater is above this temp, fan should be on
   static constexpr float kEnvFanTemp = 140;
 
   // Allow sensors to stabilize before enabling the control loop
   static constexpr uint32_t kTurnOnDelay = 2000;
+
+  // Wait for the fan to be running for this long before turning on the heater.
+  // This provides safety margin, so that the fan spins up first.
+  static constexpr uint32_t kFanToHeaterOnDelay = 1000;
 
  public:
   // Public for testing, so that tests can set millis on this.
