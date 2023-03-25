@@ -23,14 +23,14 @@ void Controller::Step() {
   }
 
   temp_out_of_range_ = false;
-  if (bean_temp < kMinBeanTemp) {
-    status_.fault_since_reset.bean_temp_low = 1;
-    temp_out_of_range_ = true;
-  }
-  if (bean_temp > kMaxBeanTemp) {
-    status_.fault_since_reset.bean_temp_high = 1;
-    temp_out_of_range_ = true;
-  }
+  // if (bean_temp < kMinBeanTemp) {
+  //   status_.fault_since_reset.bean_temp_low = 1;
+  //   temp_out_of_range_ = true;
+  // }
+  // if (bean_temp > kMaxBeanTemp) {
+  //   status_.fault_since_reset.bean_temp_high = 1;
+  //   temp_out_of_range_ = true;
+  // }
 
   if (env_temp < kMinEnvTemp) {
     status_.fault_since_reset.env_temp_low = 1;

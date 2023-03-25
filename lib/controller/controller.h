@@ -135,6 +135,7 @@ class Controller {
   MedianFilter<uint32_t, uint32_t, 9> fault_filter_ =
       MedianFilter<uint32_t, uint32_t, 9>([this]() {
         return temp_out_of_range_ || status_.fault_since_reset.no_comms ||
-               BeanTempReadError() || EnvTempReadError();
+               //BeanTempReadError() ||
+               EnvTempReadError();
       });
 };
