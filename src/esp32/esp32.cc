@@ -135,6 +135,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     if (strcmp(request_message["command"], "getData") == 0) {
       JsonObject data = response_message.createNestedObject("data");
       // TODO: set these from the controller
+      data["TARGET"] = status.target_temp;
       data["BT"] = status.bean_temp;
       data["ET"] = status.env_temp;
       data["AT"] = status.ambient_temp;

@@ -83,6 +83,10 @@
       <div id="dashboard">
         <div class="dashboard-split">
           <div>
+            <label for="target-temp">Target temp:</label>
+            <span id="target-temp"></span>
+          </div>
+          <div>
             <label for="bt">Bean temp:</label>
             <span id="bt"></span>
           </div>
@@ -306,6 +310,7 @@
 
   socket.addEventListener('message', (event) => {
     const response = JSON.parse(event.data);
+    const targetTemp = Math.round(response.data.TARGET);
     beanTemp = Math.round(Math.min(response.data.BT, maxDisplayTemp));
     const envTemp = Math.round(Math.min(response.data.ET, maxDisplayTemp));
     const ambientTemp = Math.round(response.data.AT);
@@ -318,6 +323,7 @@
     document.getElementById("toggle-curve").disabled = (mode === "MANUAL");
     document.getElementById("curve-next").disabled = (mode === "MANUAL");
 
+    document.getElementById("target-temp").innerHTML = targetTemp;
     document.getElementById("bt").innerHTML = beanTemp;
     document.getElementById("et").innerHTML = envTemp;
     document.getElementById("at").innerHTML = ambientTemp;
@@ -338,9 +344,9 @@
     document.getElementById("updated").innerHTML = response.data.UPDATED;
 
     Plotly.extendTraces(displayPanel, {
-      y: [[envTemp], [beanTemp], [parseFloat(setTemp)], [heater], [fan]],
-    }, [0, 1, 2, 3, 4]);
-    document.getElementById("csv").value += seconds + ", " +
+      y: [[targetTemp], [envTemp], [beanTemp], [parseFloat(setTemp)], [heater], [fan]],
+    }, [0, 1, 2, 3, 4, 5]);
+    document.getElementById("csv").value += seconds + ", " + targetTemp + ", " +
       envTemp + ", " + beanTemp + ", " +
       setTemp + ", " + heater + ", " +
       fan + "\n";
@@ -375,7 +381,7 @@
   });
 
   function resetCsv() {
-    document.getElementById("csv").value = "seconds, env_temp, bean_temp, set_temp, heater, fan\n";
+    document.getElementById("csv").value = "seconds, target_temp, env_temp, bean_temp, set_temp, heater, fan\n";
   }
 
   function resetGraph() {
