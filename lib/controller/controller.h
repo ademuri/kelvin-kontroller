@@ -138,4 +138,7 @@ class Controller {
                //BeanTempReadError() ||
                EnvTempReadError();
       });
+
+  // Public for testing
+  uint8_t GetFanTarget() { return fan_target_; }
 };

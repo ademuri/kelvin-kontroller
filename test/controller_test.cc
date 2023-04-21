@@ -30,6 +30,20 @@ std::string to_string(const RunnerStatus& status) {
   return std::move(ss).str();
 }
 
+void RunCyclesForFan(Controller &controller) {
+  for (uint32_t i = 0; i < 100; i++) {
+    AdvanceMillis(10);
+    controller.Step();
+  }
+}
+
+void RunCyclesForFault(Controller &controller) {
+  for (uint32_t i = 0; i < 20; i++) {
+    AdvanceMillis(1);
+    controller.Step();
+  }
+}
+
 TEST(Controller, SetsFaultIfTempRangesExceeded) {
   FakeController controller;
   controller.Init();
@@ -48,20 +62,21 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
       << to_string(controller.GetStatus());
 
   // Bean temp
-  controller.SetBeanTempF(0);
-  controller.Step();
-  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
-      << to_string(controller.GetStatus());
+  // TODO: re-enable this check once the bean temp sensor is not flaky
+  // controller.SetBeanTempF(0);
+  // RunCyclesForFault(controller);
+  // EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
+  //     << to_string(controller.GetStatus());
 
-  controller.ResetStatus();
-  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
-      << to_string(controller.GetStatus());
+  // controller.ResetStatus();
+  // EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
+  //     << to_string(controller.GetStatus());
 
-  controller.SetBeanTempF(1000);
-  controller.Step();
-  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
-      << to_string(controller.GetStatus());
-  controller.SetBeanTempF(70);
+  // controller.SetBeanTempF(1000);
+  // RunCyclesForFault(controller);
+  // ASSERT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
+  //     << to_string(controller.GetStatus());
+  // controller.SetBeanTempF(70);
 
   // Env temp
   controller.SetEnvTempF(0);
@@ -74,7 +89,7 @@ TEST(Controller, SetsFaultIfTempRangesExceeded) {
       << to_string(controller.GetStatus());
 
   controller.SetEnvTempF(1500);
-  controller.Step();
+  RunCyclesForFault(controller);
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
       << to_string(controller.GetStatus());
   controller.SetEnvTempF(70);
@@ -131,10 +146,13 @@ TEST(Controller, SafeDefaultsOnFault) {
 
   controller.SetAmbientTempF(0);
   controller.Step();
-  EXPECT_EQ(controller.GetFanValue(), 255);
+  ASSERT_TRUE(controller.GetStatus().fatal_fault);
   EXPECT_EQ(controller.GetHeaterValue(), 0);
   EXPECT_EQ(controller.GetStirValue(), true);
   EXPECT_EQ(controller.GetRelayValue(), false);
+
+  RunCyclesForFan(controller);
+  EXPECT_EQ(controller.GetFanValue(), 255);
 }
 
 TEST(Controller, SetsStatusTemps) {
@@ -151,14 +169,15 @@ TEST(Controller, SetsStatusTemps) {
 
   controller.SetBeanTempF(10);
   controller.Step();
-  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
-      << to_string(controller.GetStatus());
+  // TODO: re-enable this check once the bean temp sensor is not flaky
+  // EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
+  //     << to_string(controller.GetStatus());
   EXPECT_EQ(controller.GetStatus().bean_temp, 10);
 
   controller.SetEnvTempF(100);
   controller.Step();
-  EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
-      << to_string(controller.GetStatus());
+  // EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true)
+  //     << to_string(controller.GetStatus());
   EXPECT_EQ(controller.GetStatus().env_temp, 100);
 }
 
@@ -175,6 +194,7 @@ TEST(Controller, CommandSetsFan) {
   RunnerCommand command{};
   command.fan_speed = 200;
   controller.ReceiveCommand(command);
+  RunCyclesForFan(controller);
   EXPECT_EQ(controller.GetFanValue(), 200);
 
   controller.Step();
@@ -270,6 +290,7 @@ TEST(Controller, RunsFanWhileBeansStillHot) {
 
   controller.SetBeanTempF(200);
   controller.Step();
+  RunCyclesForFan(controller);
   EXPECT_EQ(controller.GetFanValue(), 255);
 
   controller.SetBeanTempF(70);
@@ -278,6 +299,7 @@ TEST(Controller, RunsFanWhileBeansStillHot) {
 
   controller.SetBeanTempF(200);
   controller.Step();
+  RunCyclesForFan(controller);
   EXPECT_EQ(controller.GetFanValue(), 255);
   controller.SetFanTarget(200);
   controller.Step();
@@ -299,6 +321,7 @@ TEST(Controller, RunsFanWhileEnvStillHot) {
 
   controller.SetEnvTempF(200);
   controller.Step();
+  RunCyclesForFan(controller);
   EXPECT_EQ(controller.GetFanValue(), 255);
 
   controller.SetEnvTempF(70);
@@ -307,6 +330,7 @@ TEST(Controller, RunsFanWhileEnvStillHot) {
 
   controller.SetEnvTempF(200);
   controller.Step();
+  RunCyclesForFan(controller);
   EXPECT_EQ(controller.GetFanValue(), 255);
   controller.SetFanTarget(200);
   controller.Step();
@@ -354,18 +378,19 @@ TEST(Controller, SafeModeOnFault) {
   EXPECT_EQ(controller.GetFanValue(), false);
   EXPECT_EQ(controller.GetStirValue(), false);
 
-  controller.SetBeanTempReadError(1);
-  for (uint32_t i = 0; i < 10; i++) {
+  controller.SetEnvTempReadError(1);
+  for (uint32_t i = 0; i < 20; i++) {
     AdvanceMillis(200);
     controller.fault_filter_.SetMillis(millis());
     controller.Step();
   }
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), true);
-  EXPECT_EQ(controller.GetStatus().fatal_fault, true);
-  EXPECT_EQ(controller.GetFanValue(), 255);
+  ASSERT_EQ(controller.GetStatus().fatal_fault, true);
   EXPECT_EQ(controller.GetStirValue(), true);
+  RunCyclesForFan(controller);
+  EXPECT_EQ(controller.GetFanValue(), 255);
 
-  controller.SetBeanTempReadError(0);
+  controller.SetEnvTempReadError(0);
   for (uint32_t i = 0; i < 100; i++) {
     AdvanceMillis(200);
     controller.fault_filter_.SetMillis(millis());
