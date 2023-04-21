@@ -30,18 +30,19 @@ std::string to_string(const RunnerStatus& status) {
   return std::move(ss).str();
 }
 
-void RunCyclesForFan(Controller &controller) {
-  for (uint32_t i = 0; i < 100; i++) {
-    AdvanceMillis(10);
+void RunCycles (Controller &controller, const uint32_t cycles, const uint32_t time_step) {
+  for (uint32_t i = 0; i < cycles; i++) {
+    AdvanceMillis(time_step);
     controller.Step();
   }
 }
 
+void RunCyclesForFan(Controller &controller) {
+  RunCycles(controller, /*cycles=*/100, /*time_step=*/10);
+}
+
 void RunCyclesForFault(Controller &controller) {
-  for (uint32_t i = 0; i < 20; i++) {
-    AdvanceMillis(1);
-    controller.Step();
-  }
+  RunCycles(controller, /*cycles=*/20, /*time_step=*/1);
 }
 
 TEST(Controller, SetsFaultIfTempRangesExceeded) {
@@ -234,7 +235,7 @@ TEST(Controller, CommandSetsPidTemp) {
   controller.Step();
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
-  AdvanceMillis(10000);
+  RunCycles(controller, /*cycles=*/400, /*time_step=*/500);
   controller.Step();
   EXPECT_EQ(controller.GetHeaterValue(), true);
 
@@ -273,8 +274,7 @@ TEST(Controller, OnlySetsHeaterIfFanIsOn) {
   EXPECT_EQ(controller.GetStatus().fault_since_reset.Faulty(), false)
       << to_string(controller.GetStatus());
 
-  AdvanceMillis(10000);
-  controller.Step();
+  RunCycles(controller, /*cycles=*/400, /*time_step=*/500);
   EXPECT_EQ(controller.GetHeaterValue(), true);
 }
 
@@ -399,6 +399,43 @@ TEST(Controller, SafeModeOnFault) {
     EXPECT_EQ(controller.GetFanValue(), 255);
     EXPECT_EQ(controller.GetStirValue(), true);
   }
+}
+
+TEST(Controller, RampsSetTemp) {
+  FakeController controller;
+  controller.Init();
+  controller.SetBeanTempF(70);
+  controller.SetEnvTempF(70);
+  controller.SetAmbientTempF(70);
+  controller.SetFanTarget(0);
+  controller.Step();
+
+  RunnerCommand command{};
+  command.target_temp = 200;
+  controller.ReceiveCommand(command);
+  EXPECT_EQ(controller.GetStatus().target_temp, 0);
+
+  AdvanceMillis(500);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().target_temp, 1);
+
+  AdvanceMillis(500);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().target_temp, 2);
+
+  RunCycles(controller, /*cycles=*/197, /*time_step=*/500);
+  EXPECT_EQ(controller.GetStatus().target_temp, 199);
+
+  AdvanceMillis(500);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().target_temp, 200);
+  AdvanceMillis(500);
+  controller.Step();
+  EXPECT_EQ(controller.GetStatus().target_temp, 200);
+
+  command.target_temp = 50;
+  controller.ReceiveCommand(command);
+  EXPECT_EQ(controller.GetStatus().target_temp, 50);
 }
 
 }  // namespace

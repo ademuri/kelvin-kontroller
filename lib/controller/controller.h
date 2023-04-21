@@ -96,6 +96,7 @@ class Controller {
   float p = 0.1;
   float i = 0;
   float d = 0;
+  Ramper set_temp_ramper_{/*period=*/500, /*max_change*/1};
   AutoPIDRelay temp_pid{kSsrPeriod, p, i, d};
 
   CountUpTimer fan_timer_;

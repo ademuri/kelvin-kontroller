@@ -76,6 +76,9 @@ void Controller::Step() {
     return;
   }
 
+  set_temp_ramper_.Step();
+  temp_pid.setSetPoint(set_temp_ramper_.Get());
+  status_.target_temp = set_temp_ramper_.Get();
   temp_pid.run(env_temp);
   if (fan_target_ > 0 && fan_ramper_.Get() > 0) {
     status_.heater_output = temp_pid.getOutput();
@@ -100,7 +103,9 @@ void Controller::Step() {
 
 void Controller::ReceiveCommand(const RunnerCommand &command) {
   set_temp_ = command.target_temp;
-  temp_pid.setSetPoint(command.target_temp);
+  set_temp_ramper_.SetTarget(command.target_temp);
+  temp_pid.setSetPoint(set_temp_ramper_.Get());
+  status_.target_temp = set_temp_ramper_.Get();
 
   SetFanTarget(command.fan_speed);
   if (command.reset == true) {
