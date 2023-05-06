@@ -75,22 +75,22 @@ const char *faultToDebugString(const RunnerFault &fault) {
   std::stringstream stream;
 
   if (fault.bean_temp_high) {
-    stream << "bean_temp_high, ";
+    stream << "bean_high, ";
   }
   if (fault.bean_temp_low) {
-    stream << "bean_temp_low, ";
+    stream << "bean_low, ";
   }
   if (fault.env_temp_high) {
-    stream << "env_temp_high, ";
+    stream << "env_high, ";
   }
   if (fault.env_temp_low) {
-    stream << "env_temp_low, ";
+    stream << "env_low, ";
   }
   if (fault.ambient_temp_high) {
-    stream << "ambient_temp_high, ";
+    stream << "ambient_high, ";
   }
   if (fault.ambient_temp_low) {
-    stream << "ambient_temp_low, ";
+    stream << "ambient_low, ";
   }
   if (fault.bean_temp_read_error != 0) {
     stream << "bean_error: "
