@@ -55,6 +55,7 @@ struct RunnerStatus {
 
 struct RunnerCommand {
   float target_temp = 0;
+  float manual_output = -1;
   uint8_t fan_speed = 0;
   bool reset = false;
   float p = -1;

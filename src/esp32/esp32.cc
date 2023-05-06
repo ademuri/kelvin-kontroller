@@ -22,6 +22,7 @@ constexpr int kRx = 16;
 constexpr int kTx = 17;
 
 constexpr char kTemp[] = "temp";
+constexpr char kManualOutput[] = "manualOutput";
 constexpr char kFan[] = "fan";
 constexpr char kReset[] = "reset";
 constexpr char kP[] = "p";
@@ -170,6 +171,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
       if (params.containsKey(kTemp)) {
         command.target_temp = params[kTemp];
+      }
+      if (params.containsKey(kManualOutput)) {
+        command.manual_output = params[kManualOutput];
       }
       if (params.containsKey(kFan)) {
         command.fan_speed = params[kFan];

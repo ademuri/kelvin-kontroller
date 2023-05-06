@@ -422,6 +422,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     let curve = [];
 
     let error = false;
+    let prevFan = 255;
     curveElement.value.split("\n").forEach((line) => {
       let point = {};
       const tokens = line.split(",");
@@ -451,6 +452,9 @@ const char index_html[] PROGMEM = R"rawliteral(
           error = true;
           return;
         }
+        prevFan = point['fan'];
+      } else {
+        point['fan'] = prevFan;
       }
 
       curve.push(point);
@@ -460,6 +464,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       return;
     }
 
+    resetGraph();
     const obj = { "command": "runCurve", "curve": curve };
     socket.send(JSON.stringify(obj));
   });

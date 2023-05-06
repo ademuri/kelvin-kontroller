@@ -106,6 +106,7 @@ void Controller::ReceiveCommand(const RunnerCommand &command) {
   set_temp_ramper_.SetTarget(command.target_temp);
   temp_pid.setSetPoint(set_temp_ramper_.Get());
   status_.target_temp = set_temp_ramper_.Get();
+  temp_pid.setManualOutput(command.manual_output);
 
   SetFanTarget(command.fan_speed);
   if (command.reset == true) {

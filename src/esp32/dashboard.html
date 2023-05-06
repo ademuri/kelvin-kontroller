@@ -165,6 +165,10 @@
             <input type="text" id="set-temp" value="0">
           </div>
           <div>
+            <label for="manual-output">Manual output</label>
+            <input type="text" id="manual-output" value="-1">
+          </div>
+          <div>
             <button id="autoscale">Autoscale</button>
           </div>
 
@@ -473,6 +477,11 @@
   document.getElementById("set-temp").addEventListener("change", (event) => {
     setTemp = parseFloat(event.target.value);
     sendParams({ temp: setTemp });
+  });
+
+  document.getElementById("manual-output").addEventListener("change", (event) => {
+    const output = parseFloat(event.target.value);
+    sendParams({ manualOutput: output });
   });
 
   document.getElementById("run-curve").addEventListener("click", (event) => {
