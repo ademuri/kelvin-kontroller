@@ -323,7 +323,7 @@
     beanTemp = Math.round(Math.min(response.data.BT, maxDisplayTemp));
     const envTemp = Math.round(Math.min(response.data.ET, maxDisplayTemp));
     const ambientTemp = Math.round(response.data.AT);
-    const heater = Math.round(response.data.HEATER * 100) / 100;
+    const heater = response.data.HEATER;
     const fan = Math.round(response.data.FAN / 255 * 100) / 100;
     setTemp = response.data.SET;
     mode = response.data.MODE;
@@ -428,7 +428,7 @@
   document.getElementById("cooldown").addEventListener("click", (event) => {
     document.getElementById("set-fan").value = 255;
     document.getElementById("set-temp").value = 0;
-    sendParams({ fan: 255, temp: 0 });
+    sendParams({ fan: 255, temp: 0, manualOutput: -1 });
     addAnnotation(`Cooldown (${beanTemp}F)`);
   });
 
