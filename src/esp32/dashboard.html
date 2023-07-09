@@ -428,7 +428,7 @@
   document.getElementById("cooldown").addEventListener("click", (event) => {
     document.getElementById("set-fan").value = 255;
     document.getElementById("set-temp").value = 0;
-    sendParams({ fan: 255, temp: 0, manualOutput: -1 });
+    sendParams({ fan: 255, temp: 0, manualOutput: -1, cooldown: true });
     addAnnotation(`Cooldown (${beanTemp}F)`);
   });
 

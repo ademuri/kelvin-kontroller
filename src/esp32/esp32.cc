@@ -29,9 +29,12 @@ constexpr char kP[] = "p";
 constexpr char kI[] = "i";
 constexpr char kD[] = "d";
 constexpr char kTime[] = "time";
+constexpr char kCooldown[] = "cooldown";
 
 constexpr bool kDebugWebsockets = false;
 constexpr bool kDebugCurve = false;
+
+constexpr float kCooldownTemp = 110;
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
@@ -48,6 +51,7 @@ uint8_t curve_index = 0;
 uint32_t curve_started_at_ms = 0;
 uint32_t next_curve_point_at_ms = 0;
 uint32_t curve_paused_at = 0;
+bool cooling = false;
 
 constexpr uint8_t kScreenWidth = 64;
 constexpr uint8_t kScreenHeight = 128;
@@ -193,12 +197,18 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       if (params.containsKey(kD)) {
         command.d = params[kD];
       }
+      if (params.containsKey(kCooldown)) {
+        cooling = true;
+      } else {
+        cooling = false;
+      }
     } else if (strcmp(request_message["command"], "runCurve") == 0) {
       JsonArrayConst curve = request_message["curve"];
       current_curve.clear();
 
       for (uint8_t i = 0; i < curve.size(); i++) {
-        if (!(curve[i].containsKey(kTime) && curve[i].containsKey(kManualOutput) &&
+        if (!(curve[i].containsKey(kTime) &&
+              curve[i].containsKey(kManualOutput) &&
               curve[i].containsKey(kFan))) {
           Serial.print("Missing key from curve point: ");
           serializeJson(curve[i], Serial);
@@ -206,8 +216,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           current_curve.clear();
           return;
         }
-        current_curve.push_back(
-            CurvePoint{curve[i][kTime], curve[i][kManualOutput], curve[i][kFan]});
+        current_curve.push_back(CurvePoint{
+            curve[i][kTime], curve[i][kManualOutput], curve[i][kFan]});
       }
 
       if (current_curve.empty()) {
@@ -402,7 +412,13 @@ void loop() {
     oled.display();
   }
 
-  if (!current_curve.empty()) {
+  if (current_curve.empty()) {
+    if (cooling && status.env_temp < kCooldownTemp) {
+      command.fan_speed = 0;
+      cooling = false;
+    }
+  } else {
+    // !current_curve.empty()
     if ((curve_paused_at == 0 && millis() > next_curve_point_at_ms) ||
         next_curve_point_at_ms == 0) {
       curve_index++;
@@ -423,8 +439,9 @@ void loop() {
           Serial.println("End of curve.");
         }
         current_curve.clear();
-        command.manual_output = 0;
+        command.manual_output = -1;
         command.fan_speed = 255;
+        cooling = true;
       }
     }
   }
