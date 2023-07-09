@@ -513,8 +513,8 @@
         error = true;
         return;
       }
-      point['temp'] = parseInt(tokens[1]);
-      if (point['temp'] == NaN) {
+      point['manualOutput'] = parseFloat(tokens[1]);
+      if (point['manualOutput'] == NaN) {
         curveElement.classList = ["error"];
         error = true;
         return;

@@ -198,7 +198,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       current_curve.clear();
 
       for (uint8_t i = 0; i < curve.size(); i++) {
-        if (!(curve[i].containsKey(kTime) && curve[i].containsKey(kTemp) &&
+        if (!(curve[i].containsKey(kTime) && curve[i].containsKey(kManualOutput) &&
               curve[i].containsKey(kFan))) {
           Serial.print("Missing key from curve point: ");
           serializeJson(curve[i], Serial);
@@ -207,7 +207,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           return;
         }
         current_curve.push_back(
-            CurvePoint{curve[i][kTime], curve[i][kTemp], curve[i][kFan]});
+            CurvePoint{curve[i][kTime], curve[i][kManualOutput], curve[i][kFan]});
       }
 
       if (current_curve.empty()) {
@@ -410,20 +410,20 @@ void loop() {
         next_curve_point_at_ms =
             millis() + current_curve[curve_index].time * 1000;
         if (kDebugCurve) {
-          Serial.printf("Setting curve: time: %u, temp: %u, fan: %u\n",
+          Serial.printf("Setting curve: time: %u, manualOutput: %u, fan: %u\n",
                         current_curve[curve_index].time,
-                        current_curve[curve_index].temp,
+                        current_curve[curve_index].manual_output,
                         current_curve[curve_index].fan);
         }
 
-        command.target_temp = current_curve[curve_index].temp;
+        command.manual_output = current_curve[curve_index].manual_output;
         command.fan_speed = current_curve[curve_index].fan;
       } else {
         if (kDebugCurve) {
           Serial.println("End of curve.");
         }
         current_curve.clear();
-        command.target_temp = 0;
+        command.manual_output = 0;
         command.fan_speed = 255;
       }
     }
