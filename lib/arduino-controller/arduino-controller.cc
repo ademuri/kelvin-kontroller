@@ -9,8 +9,12 @@ void ArduinoController::Init() {
   pinMode(kStirEn, OUTPUT);
   pinMode(kSsrEn, OUTPUT);
   pinMode(kRelayEn, OUTPUT);
-  pinMode(kBuzzer, OUTPUT);
   pinMode(kLed, OUTPUT);
+  
+  // buzzer_timer_.SetMode(/*channel=*/1, TIMER_OUTPUT_COMPARE_PWM1, /*pin=*/kBuzzer);
+  // // 4 kHz
+  // buzzer_timer_.SetOverflow(250, MICROSEC_FORMAT);
+  // buzzer_timer_.SetCaptureCompare(/*channel=*/1, 50, PERCENT_COMPARE_FORMAT);
 
   pinMode(kThermistor1, INPUT);
   pinMode(kThermistor2, INPUT);
@@ -55,6 +59,12 @@ void ArduinoController::Step() {
     no_comms_timer_.Reset();
   } else if (no_comms_timer_.Expired()) {
     status_.fault_since_reset.no_comms = true;
+  }
+
+  if (status_.fatal_fault) {
+    tone(kBuzzer, /*frequency=*/4000);
+  } else {
+    noTone(kBuzzer);
   }
 }
 

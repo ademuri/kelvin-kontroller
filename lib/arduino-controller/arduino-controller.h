@@ -87,4 +87,6 @@ class ArduinoController : public Controller {
 
   static constexpr uint32_t kNoCommsTimeout = 10 * 1000;
   CountDownTimer no_comms_timer_{kNoCommsTimeout};
+
+//   HardwareTimer buzzer_timer_(TIM16);
 };
