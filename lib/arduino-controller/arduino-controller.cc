@@ -9,6 +9,7 @@ void ArduinoController::Init() {
   pinMode(kStirEn, OUTPUT);
   pinMode(kSsrEn, OUTPUT);
   pinMode(kRelayEn, OUTPUT);
+  pinMode(kBuzzer, OUTPUT);
   pinMode(kLed, OUTPUT);
   
   // buzzer_timer_.SetMode(/*channel=*/1, TIMER_OUTPUT_COMPARE_PWM1, /*pin=*/kBuzzer);

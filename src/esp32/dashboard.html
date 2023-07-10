@@ -323,7 +323,7 @@
     beanTemp = Math.round(Math.min(response.data.BT, maxDisplayTemp));
     const envTemp = Math.round(Math.min(response.data.ET, maxDisplayTemp));
     const ambientTemp = Math.round(response.data.AT);
-    const heater = response.data.HEATER;
+    const heater = Math.round(response.data.HEATER * 100) / 100;
     const fan = Math.round(response.data.FAN / 255 * 100) / 100;
     setTemp = response.data.SET;
     mode = response.data.MODE;
@@ -338,6 +338,9 @@
     document.getElementById("at").innerHTML = ambientTemp;
     if (document.activeElement.id !== "set-temp") {
       document.getElementById("set-temp").value = setTemp;
+    }
+    if (document.activeElement.id !== "manual-output") {
+      document.getElementById("manual-output").value = heater;
     }
     document.getElementById("fault").innerHTML = response.data.FAULT;
     document.getElementById("fatal-fault").innerHTML = !response.data.FATAL_FAULT;
@@ -390,7 +393,8 @@
   });
 
   function resetCsv() {
-    document.getElementById("csv").value = "seconds, target_temp, env_temp, bean_temp, set_temp, heater, fan\n";
+    document.getElementById("csv").value =
+      "seconds, target_temp, env_temp, bean_temp, set_temp, heater, fan\n";
   }
 
   function resetGraph() {
@@ -401,7 +405,8 @@
     Plotly.react(displayPanel, data, layout);
     resetCsv();
   }
-  document.getElementById("reset-graph").addEventListener("click", (event) => { resetGraph(); });
+  document.getElementById("reset-graph").addEventListener("click",
+    (event) => { resetGraph(); });
 
   function addAnnotation(text) {
     // This API is sort-of documented here: https://plotly.com/javascript/text-and-annotations/#styling-and-formatting-annotations
