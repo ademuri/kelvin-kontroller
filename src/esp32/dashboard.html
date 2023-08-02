@@ -433,6 +433,11 @@
   document.getElementById("cooldown").addEventListener("click", (event) => {
     document.getElementById("set-fan").value = 255;
     document.getElementById("set-temp").value = 0;
+    document.getElementById("manual-output").value = 0;
+
+    const stopCurve = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(stopCurve));
+
     sendParams({ fan: 255, temp: 0, manualOutput: -1, cooldown: true });
     addAnnotation(`Cooldown (${beanTemp}F)`);
   });
@@ -440,6 +445,11 @@
   document.getElementById("stop").addEventListener("click", (event) => {
     document.getElementById("set-fan").value = 0;
     document.getElementById("set-temp").value = 0;
+    document.getElementById("manual-output").value = 0;
+
+    const stopCurve = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(stopCurve));
+
     sendParams({ fan: 0, temp: 0 });
   });
 
