@@ -63,7 +63,9 @@ void Controller::Step() {
 
   fault_filter_.Run();
 
-  if (fault_filter_.GetFilteredValue() != 0 || status_.fatal_fault) {
+  if (fault_filter_.GetFilteredValue() == 0) {
+    status_.fatal_fault = false;
+  } else {
     status_.fatal_fault = true;
     // When a fault occurs, fail safe: disable the heater, turn the fan to
     // maximum, and enable the stir.
@@ -108,7 +110,9 @@ void Controller::ReceiveCommand(const RunnerCommand &command) {
   status_.target_temp = set_temp_ramper_.Get();
   temp_pid.setManualOutput(command.manual_output);
 
-  SetFanTarget(command.fan_speed);
+  if (!status_.fatal_fault) {
+    SetFanTarget(command.fan_speed);
+  }
   if (command.reset == true) {
     ResetStatus();
   }

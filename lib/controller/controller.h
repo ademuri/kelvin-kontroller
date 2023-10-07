@@ -133,8 +133,8 @@ class Controller {
 
  public:
   // Public for testing, so that tests can set millis on this.
-  MedianFilter<uint32_t, uint32_t, 19> fault_filter_ =
-      MedianFilter<uint32_t, uint32_t, 19>([this]() {
+  MedianFilter<uint32_t, uint32_t, 29> fault_filter_ =
+      MedianFilter<uint32_t, uint32_t, 29>([this]() {
         return temp_out_of_range_ || status_.fault_since_reset.no_comms ||
                //BeanTempReadError() ||
                EnvTempReadError();
