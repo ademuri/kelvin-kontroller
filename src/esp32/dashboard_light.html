@@ -1,0 +1,432 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <style>
+    html {
+      font-family: Arial;
+      font-size: 2.0rem;
+      background-color: black;
+      color: white;
+    }
+
+    .dashboard label {
+      font-style: italic;
+    }
+
+    div.dashboard-split {
+      width: 50%;
+      float: left;
+    }
+
+    .error {
+      background-color: red;
+    }
+
+    #csv {
+      width: 35em;
+      margin-top: 1em;
+    }
+
+    input[type="text"] {
+      width: 3em;
+      font-size: 0.7rem;
+    }
+
+    #dashboard {
+      float: left;
+      width: 100%;
+    }
+
+    #tune {
+      float: left;
+      width: 15%;
+    }
+
+    #reset-graph-container {
+      margin-top: 3em;
+    }
+
+    #fatal-fault {
+      background-color: green;
+    }
+
+    #fatal-fault.fault {
+      background-color: red;
+    }
+
+    #current-curve {
+      height: 8em;
+      width: 20em;
+      font-size: 0.6em;
+    }
+
+    #curves label {
+      display: block;
+    }
+
+    #curve-key {
+      font-size: 0.5em;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+  <h3>Kelvin Kontroller</h3>
+  <div id="container">
+    <div id="control-panel">
+      <div id="dashboard">
+        <div class="dashboard-split">
+          <div>
+            <label for="target-temp">Target temp:</label>
+            <span id="target-temp"></span>
+          </div>
+          <div>
+            <label for="bt">Bean temp:</label>
+            <span id="bt"></span>
+          </div>
+          <div>
+            <label for="et">Env temp:</label>
+            <span id="et"></span>
+          </div>
+          <div>
+            <label for="at">Ambient temp:</label>
+            <span id="at"></span>
+          </div>
+          <div>
+            <label for="heater">Heater:</label>
+            <span id="heater"></span>
+          </div>
+          <div>
+            <label for="fault">Fault:</label>
+            <span id="fault"></span>
+          </div>
+          <div>
+            <label for="fatal-fault">Running: </label>
+            <span id="fatal-fault"></span>
+          </div>
+          <div>
+            <label for="updated">Updated:</label>
+            <span id="updated"></span>
+          </div>
+          <button id="reset">Reset controller</button>
+        </div>
+        <div class="dashboard-split">
+          <div>
+            <label for="mode">Mode: </label>
+            <span id="mode"></span>
+          </div>
+          <div>
+            <label for="roast-time">Roast time: </label>
+            <span id="roast-time"></span>
+          </div>
+          <div>
+            <label for="step-time">Curve step time remaining: </label>
+            <span id="step-time"></span>
+          </div>
+          <div>
+            <button id="curve-next">Next curve point</button>
+          </div>
+          <div>
+            <button id="toggle-curve">Pause curve</button>
+          </div>
+          <div>
+            <button id="stop-curve">Stop curve</button>
+          </div>
+        </div>
+      </div>
+      <br />
+
+      <div id="tune-and-graph">
+        <div id="tune">
+          <div>
+            <label for="p">P</label>
+            <input type="text" id="p" value="0">
+          </div>
+          <div>
+            <label for="i">I</label>
+            <input type="text" id="i" value="0">
+          </div>
+          <div>
+            <label for="d">D</label>
+            <input type="text" id="d" value="0">
+          </div>
+          <div>
+            <label for="set-fan">Fan</label>
+            <input type="text" id="set-fan" value="0">
+          </div>
+          <div>
+            <label for="set-temp">Set temp</label>
+            <input type="text" id="set-temp" value="0">
+          </div>
+          <div>
+            <label for="manual-output">Manual output</label>
+            <input type="text" id="manual-output" value="-1">
+          </div>
+
+          <div>
+            <button id="cooldown">Cooldown</button>
+          </div>
+          <div>
+            <button id="stop">Stop</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <textarea id="csv"></textarea>
+  </div>
+  <br />
+
+  <div id="curves">
+    <label for="current-curve">Curve</label>
+    <div id="curve-key">Time, Temp, Fan=(prev or 255)</div>
+    <textarea id="current-curve"></textarea>
+    <button id="run-curve">Run curve</button>
+  </div>
+  <br />
+
+  <form method="post" enctype="multipart/form-data" style="visibility: hidden;">
+    <div>
+      <div id="tester"></div><label for="file">Firmware for STM32G030C8T6</label>
+      <input type="file" id="file" name="file" accept=".bin" />
+    </div>
+    <div>
+      <button>Flash</button>
+    </div>
+  </form>
+</body>
+
+<script>
+  resetCsv();
+
+  const maxDisplayTemp = 600;
+
+  const socket = new WebSocket('ws://roaster.local:80/websocket');
+  let seconds = 0;
+  let setTemp = 0;
+  let beanTemp = 0;
+  // https://marriedtotheseacomics.com/post/103884129802/stop-hitting-yourself-from-married-to-the-sea
+  let ignoreNextRelayout = true;
+  let autoscaleX = true;
+  let annotationIndex = 0;
+  let mode = "MANUAL";
+
+  // Load tuning constants from local storage
+  const prevP = localStorage.getItem("p");
+  if (prevP !== null) {
+    document.getElementById("p").value = prevP;
+  }
+
+  const prevI = localStorage.getItem("i");
+  if (prevI !== null) {
+    document.getElementById("i").value = prevI;
+  }
+
+  const prevD = localStorage.getItem("d");
+  if (prevD !== null) {
+    document.getElementById("d").value = prevD;
+  }
+
+  socket.addEventListener('message', (event) => {
+    const response = JSON.parse(event.data);
+    const targetTemp = Math.round(response.data.TARGET);
+    beanTemp = Math.round(Math.min(response.data.BT, maxDisplayTemp));
+    const envTemp = Math.round(Math.min(response.data.ET, maxDisplayTemp));
+    const ambientTemp = Math.round(response.data.AT);
+    const heater = Math.round(response.data.HEATER * 100) / 100;
+    const fan = Math.round(response.data.FAN / 255 * 100) / 100;
+    setTemp = response.data.SET;
+    mode = response.data.MODE;
+    document.getElementById("toggle-curve").innerHTML =
+      (mode === "PAUSED") ? "Resume curve" : "Pause curve";
+    document.getElementById("toggle-curve").disabled = (mode === "MANUAL");
+    document.getElementById("curve-next").disabled = (mode === "MANUAL");
+
+    document.getElementById("target-temp").innerHTML = targetTemp;
+    document.getElementById("bt").innerHTML = beanTemp;
+    document.getElementById("et").innerHTML = envTemp;
+    document.getElementById("at").innerHTML = ambientTemp;
+    if (document.activeElement.id !== "set-temp") {
+      document.getElementById("set-temp").value = setTemp;
+    }
+    if (document.activeElement.id !== "manual-output") {
+      document.getElementById("manual-output").value = heater;
+    }
+    document.getElementById("fault").innerHTML = response.data.FAULT;
+    document.getElementById("fatal-fault").innerHTML = !response.data.FATAL_FAULT;
+    document.getElementById("fatal-fault").classList =
+      response.data.FATAL_FAULT === true ? ['fault'] : [];
+    if (document.activeElement.id !== "set-fan") {
+      document.getElementById("set-fan").value = response.data.FAN;
+    }
+    document.getElementById("mode").innerHTML = mode;
+    document.getElementById("roast-time").innerHTML = response.data.TIME;
+    document.getElementById("step-time").innerHTML
+      = (mode === "CURVE") ? response.data.STEP_TIME : "-";
+    document.getElementById("updated").innerHTML = response.data.UPDATED;
+
+    document.getElementById("csv").value += seconds + ", " + targetTemp + ", " +
+      envTemp + ", " + beanTemp + ", " +
+      setTemp + ", " + heater + ", " +
+      fan + "\n";
+
+    seconds++;
+  });
+
+  function resetCsv() {
+    document.getElementById("csv").value =
+      "seconds, target_temp, env_temp, bean_temp, set_temp, heater, fan\n";
+  }
+
+  document.getElementById("cooldown").addEventListener("click", (event) => {
+    document.getElementById("set-fan").value = 255;
+    document.getElementById("set-temp").value = 0;
+    document.getElementById("manual-output").value = 0;
+
+    const stopCurve = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(stopCurve));
+
+    sendParams({ fan: 255, temp: 0, manualOutput: -1, cooldown: true });
+  });
+
+  document.getElementById("stop").addEventListener("click", (event) => {
+    document.getElementById("set-fan").value = 0;
+    document.getElementById("set-temp").value = 0;
+    document.getElementById("manual-output").value = 0;
+
+    const stopCurve = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(stopCurve));
+
+    sendParams({ fan: 0, temp: 0 });
+  });
+
+  socket.addEventListener('error', (event) => {
+    document.getElementById("dashboard").classList.add("error");
+  });
+
+  function getData() {
+    socket.send('{"command": "getData"}');
+  }
+
+  function sendParams(params) {
+    const obj = { "command": "setParams", "params": params };
+    socket.send(JSON.stringify(obj));
+  }
+
+  function reset() {
+    sendParams({ "reset": true });
+  }
+
+  document.getElementById("reset").addEventListener("click", (event) => { reset(); });
+
+  document.getElementById("p").addEventListener("change", (event) => {
+    const p = parseFloat(event.target.value);
+    sendParams({ p: p });
+    localStorage.setItem("p", p);
+  });
+
+  document.getElementById("i").addEventListener("change", (event) => {
+    const i = parseFloat(event.target.value);
+    sendParams({ i: i });
+    localStorage.setItem("i", i);
+  });
+
+  document.getElementById("d").addEventListener("change", (event) => {
+    const d = parseFloat(event.target.value);
+    sendParams({ d: d });
+    localStorage.setItem("d", d);
+  });
+
+  document.getElementById("set-fan").addEventListener("change", (event) => {
+    sendParams({ fan: parseFloat(event.target.value) });
+  });
+
+  document.getElementById("set-temp").addEventListener("change", (event) => {
+    setTemp = parseFloat(event.target.value);
+    sendParams({ temp: setTemp });
+  });
+
+  document.getElementById("manual-output").addEventListener("change", (event) => {
+    const output = parseFloat(event.target.value);
+    sendParams({ manualOutput: output });
+  });
+
+  document.getElementById("run-curve").addEventListener("click", (event) => {
+    const curveElement = document.getElementById("current-curve");
+    localStorage.setItem("current-curve", curveElement.value);
+    curveElement.classList = [];
+    let curve = [];
+
+    let error = false;
+    let prevFan = 255;
+    curveElement.value.split("\n").forEach((line) => {
+      let point = {};
+      const tokens = line.split(",");
+      if (tokens.length < 2 || tokens.length > 3) {
+        curveElement.classList = ["error"];
+        error = true
+        // forEach return early
+        return;
+      }
+
+      point['time'] = parseInt(tokens[0]);
+      if (point['time'] == NaN) {
+        curveElement.classList = ["error"];
+        error = true;
+        return;
+      }
+      point['manualOutput'] = parseFloat(tokens[1]);
+      if (point['manualOutput'] == NaN) {
+        curveElement.classList = ["error"];
+        error = true;
+        return;
+      }
+      if (tokens.length == 3) {
+        point['fan'] = parseInt(tokens[2]);
+        if (point['fan'] == NaN) {
+          curveElement.classList = ["error"];
+          error = true;
+          return;
+        }
+        prevFan = point['fan'];
+      } else {
+        point['fan'] = prevFan;
+      }
+
+      curve.push(point);
+    });
+
+    if (error) {
+      return;
+    }
+
+    const obj = { "command": "runCurve", "curve": curve };
+    socket.send(JSON.stringify(obj));
+  });
+  document.getElementById("current-curve").value =
+    localStorage.getItem("current-curve");
+
+  document.getElementById("curve-next").addEventListener("click", (event) => {
+    const obj = { "command": "curveNext" };
+    socket.send(JSON.stringify(obj));
+  });
+
+  document.getElementById("toggle-curve").addEventListener("click", (event) => {
+    const obj = { "command": "pauseCurve" };
+    socket.send(JSON.stringify(obj));
+  });
+
+  document.getElementById("stop-curve").addEventListener("click", (event) => {
+    const obj = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(obj));
+    sendParams({ fan: 255, temp: 0 });
+  });
+
+  setInterval(getData, 1000);
+
+</script>
