@@ -63,6 +63,7 @@
     #current-curve {
       height: 8em;
       width: 20em;
+      font-size: 0.6em;
     }
 
     #curves label {
@@ -137,6 +138,11 @@
           </div>
           <div>
             <button id="stop-curve">Stop curve</button>
+          </div>
+          <div>
+            <label for="stop-at">Stop at</label>
+            <input type="text" id="stop-at" />
+            <button id="apply-stop-at">Apply</button>
           </div>
         </div>
       </div>
@@ -293,6 +299,7 @@
 
   const socket = new WebSocket('ws://roaster.local:80/websocket');
   let seconds = 0;
+  let roastTime = 0;
   let setTemp = 0;
   let beanTemp = 0;
   // https://marriedtotheseacomics.com/post/103884129802/stop-hitting-yourself-from-married-to-the-sea
@@ -300,6 +307,7 @@
   let autoscaleX = true;
   let annotationIndex = 0;
   let mode = "MANUAL";
+  let stopAt = 0;
 
   // Load tuning constants from local storage
   const prevP = localStorage.getItem("p");
@@ -350,7 +358,8 @@
       document.getElementById("set-fan").value = response.data.FAN;
     }
     document.getElementById("mode").innerHTML = mode;
-    document.getElementById("roast-time").innerHTML = response.data.TIME;
+    roastTime = response.data.TIME;
+    document.getElementById("roast-time").innerHTML = roastTime;
     document.getElementById("step-time").innerHTML
       = (mode === "CURVE") ? response.data.STEP_TIME : "-";
     document.getElementById("updated").innerHTML = response.data.UPDATED;
@@ -405,6 +414,19 @@
     Plotly.react(displayPanel, data, layout);
     resetCsv();
   }
+
+  function cooldown() {
+    document.getElementById("set-fan").value = 255;
+    document.getElementById("set-temp").value = 0;
+    document.getElementById("manual-output").value = 0;
+
+    const stopCurve = { "command": "runCurve", "curve": {} };
+    socket.send(JSON.stringify(stopCurve));
+
+    sendParams({ fan: 255, temp: 0, manualOutput: -1, cooldown: true });
+    addAnnotation(`Cooldown (${beanTemp}F)`);
+  }
+
   document.getElementById("reset-graph").addEventListener("click",
     (event) => { resetGraph(); });
 
@@ -431,15 +453,7 @@
   });
 
   document.getElementById("cooldown").addEventListener("click", (event) => {
-    document.getElementById("set-fan").value = 255;
-    document.getElementById("set-temp").value = 0;
-    document.getElementById("manual-output").value = 0;
-
-    const stopCurve = { "command": "runCurve", "curve": {} };
-    socket.send(JSON.stringify(stopCurve));
-
-    sendParams({ fan: 255, temp: 0, manualOutput: -1, cooldown: true });
-    addAnnotation(`Cooldown (${beanTemp}F)`);
+    cooldown();
   });
 
   document.getElementById("stop").addEventListener("click", (event) => {
@@ -459,6 +473,25 @@
 
   function getData() {
     socket.send('{"command": "getData"}');
+  }
+
+  function applyStopAt() {
+    const input = document.getElementById('stop-at');
+    const stopAtString = input.value;
+    if (stopAtString.length > 0) {
+      stopAt = parseInt(stopAtString);
+      console.log(stopAt);
+    }
+  }
+  document.getElementById("apply-stop-at")
+    .addEventListener("click", (event) => { applyStopAt(); });
+
+  function checkStopAt() {
+    if (stopAt > 0 && mode === "CURVE") {
+      if (roastTime > stopAt) {
+        cooldown();
+      }
+    }
   }
 
   function sendParams(params) {
@@ -577,5 +610,6 @@
   });
 
   setInterval(getData, 1000);
+  setInterval(checkStopAt, 1000);
 
 </script>
