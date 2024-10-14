@@ -34,7 +34,7 @@ constexpr char kCooldown[] = "cooldown";
 constexpr bool kDebugWebsockets = false;
 constexpr bool kDebugCurve = false;
 
-constexpr float kCooldownTemp = 110;
+constexpr float kCooldownTemp = 90;
 
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/websocket");
