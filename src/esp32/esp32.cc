@@ -17,7 +17,7 @@
 #include "html.h"
 #include "types.h"
 
-constexpr size_t kJsonBufferSize = 1000;
+constexpr size_t kJsonBufferSize = 2000;
 constexpr int kRx = 16;
 constexpr int kTx = 17;
 
@@ -59,7 +59,8 @@ constexpr int kSda = 13;
 constexpr int kScl = 4;
 Adafruit_SH1107 oled = Adafruit_SH1107(kScreenWidth, kScreenHeight, &Wire);
 
-constexpr size_t kFirmwareBufferSize = 65536;
+// constexpr size_t kFirmwareBufferSize = 65536;
+constexpr size_t kFirmwareBufferSize = 32768;
 uint8_t firmware_buffer[kFirmwareBufferSize];
 
 const char *faultToBinaryString(const RunnerFault &fault) {
